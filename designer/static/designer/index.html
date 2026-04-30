@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>VoltStream Designer | Рабочая область</title>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --text: #f0f0f0;
+      --text-sec: #aaa;
+      --accent: #4a90e2;
+      --grid-main: #333;
+      --grid-sub: #2a2a2a;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+    #toolbar {
+      padding: 8px 12px;
+      background: #252525;
+      border-bottom: 1px solid #333;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .tool-btn {
+      padding: 6px 12px;
+      background: #333;
+      border: none;
+      color: #ccc;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .tool-btn.active { background: var(--accent); color: white; }
+    #main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+    #sidebar-left {
+      width: 220px;
+      background: #252525;
+      padding: 12px;
+      overflow-y: auto;
+      border-right: 1px solid #333;
+    }
+    .lib-section { margin-bottom: 16px; }
+    .lib-title { font-size: 14px; margin-bottom: 6px; color: var(--text-sec); }
+    .lib-item {
+      padding: 6px 10px;
+      background: #2d2d2d;
+      margin: 4px 0;
+      border-radius: 4px;
+      cursor: grab;
+      user-select: none;
+      font-size: 13px;
+    }
+    .lib-item:hover { background: #353535; }
+    #canvas-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+    svg#scene {
+      background-color: #1a1a1a;
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: default;
+    }
+    .grid-line { stroke: var(--grid-main); stroke-width: 1; }
+    .sub-grid-line { stroke: var(--grid-sub); stroke-width: 0.5; }
+    .node { fill: #4a90e2; stroke: #2a5a9c; stroke-width: 1.5; }
+    .node.selected { fill: #ff9800; stroke: #cc7a00; }
+    .node.can-attach { fill: #4caf50; }
+    .line-path { fill: none; stroke: #888; stroke-width: 2; }
+    .line-path.selected { stroke: #ff9800; stroke-width: 3; }
+    .line-handle { fill: #ff9800; stroke: #cc7a00; stroke-width: 1; cursor: move; }
+    .line-handle.active { r: 8; fill: #f44336; }
+    .text-node { fill: #ddd; user-select: none; dominant-baseline: middle; text-anchor: middle; }
+    .text-node.selected { fill: #ff9800; }
+    .drawing-line { fill: none; stroke: rgba(255,152,0,0.6); stroke-width: 2; stroke-dasharray: 6,4; pointer-events: none; }
+    #selection-rect { fill: rgba(74,144,226,0.1); stroke: #4a90e2; stroke-width: 1; stroke-dasharray: 4,2; pointer-events: none; }
+    #context-menu {
+      position: absolute;
+      background: #2d2d2d;
+      border: 1px solid #444;
+      border-radius: 4px;
+      display: none;
+      z-index: 100;
+      min-width: 140px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    #context-menu button {
+      display: block;
+      width: 100%;
+      padding: 8px 12px;
+      background: none;
+      border: none;
+      color: var(--text);
+      text-align: left;
+      cursor: pointer;
+    }
+    #context-menu button:hover { background: #3a3a3a; }
+    #sidebar-right {
+      width: 280px;
+      background: #252525;
+      padding: 16px;
+      border-left: 1px solid #333;
+      overflow-y: auto;
+      display: none;
+    }
+    .prop-group {
+      margin-bottom: 12px;
+    }
+    .prop-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sec);
+      margin-bottom: 4px;
+    }
+    .prop-group input, .prop-group select {
+      width: 100%;
+      padding: 6px 8px;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      color: var(--text);
+      border-radius: 3px;
+    }
+    .prop-group input[readonly] {
+      background: #242424;
+      cursor: default;
+    }
+    #props-title {
+      font-size: 16px;
+      margin-bottom: 16px;
+      color: var(--accent);
+    }
+    #point-editor {
+      margin-top: 16px;
+      display: none;
+    }
+    #point-editor .prop-group {
+      display: flex;
+      gap: 8px;
+    }
+    #point-editor input {
+      flex: 1;
+    }
+    #connections-list {
+      padding: 6px;
+      background: #2a2a2a;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toolbar">
+  <button class="tool-btn active" id="btn-SELECT" onclick="setMode('SELECT')">🖱️ Выбор</button>
+  <button class="tool-btn" id="btn-DRAW" onclick="setMode('DRAW')">✏️ Трассировка</button>
+  <button class="tool-btn" id="btn-TEXT" onclick="setMode('TEXT')">📝 Текст</button>
+  <button onclick="undo()">↩️ Назад</button>
+  <button onclick="openLoadModal()">📁 Загрузить версию</button>
+  <button onclick="saveToServer()">💾 Сохранить</button>
+</div>
+
+<div id="main-content">
+  <div id="sidebar-left">
+    <div class="lib-section">
+      <div class="lib-title">Базовые формы</div>
+      <div class="lib-item" draggable="true" data-type="Опора" data-name="Опора ЛЭП">🗼 Опора ЛЭП</div>
+      <div class="lib-item" draggable="true" data-type="ТП" data-name="Трансформатор">⚡ ТП</div>
+      <div class="lib-item" draggable="true" data-type="Абонент" data-name="Абонент">🏠 Абонент</div>
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-title">Трансформаторы (из БД)</div>
+      {% for tp in transformers %}
+        <div class="lib-item" onclick="openCatalogModal('tp', 'Трансформаторы')">
+          ⚡ {{ tp.type_name }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-title">Потребители (из БД)</div>
+      {% for cons in consumers %}
+        <div class="lib-item" onclick="openCatalogModal('consumer', 'Потребители')">
+          🏠 {{ cons.name }}
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="lib-section">
+      <div class="lib-title">ЛЭП (из БД)</div>
+      <div class="lib-item" onclick="openCatalogModal('line', 'ЛЭП')">
+        〰️ Выбрать тип ЛЭП...
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-container">
+    <svg id="scene">
+      <defs>
+        <pattern id="smallGrid" width="50" height="50" patternUnits="userSpaceOnUse">
+          <path d="M 50 0 L 0 0 0 50" fill="none" class="sub-grid-line"/>
+        </pattern>
+        <pattern id="grid" width="250" height="250" patternUnits="userSpaceOnUse">
+          <rect width="250" height="250" fill="url(#smallGrid)"/>
+          <path d="M 250 0 L 0 0 0 250" fill="none" class="grid-line"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+      <g id="viewport">
+        <g id="lines-layer"></g>
+        <g id="nodes-layer"></g>
+        <g id="handles-layer"></g>
+        <g id="preview-layer"></g>
+      </g>
+      <rect id="selection-rect" x="0" y="0" width="0" height="0" style="display:none;"></rect>
+    </svg>
+  </div>
+
+  <div id="sidebar-right">
+    <div id="props-title">Свойства</div>
+
+    <!-- Текст -->
+    <div id="text-props" style="display:none;">
+      <div class="prop-group">
+        <label>Содержимое</label>
+        <input type="text" id="prop-name-text" oninput="updateNodeName(this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Размер шрифта</label>
+        <input type="number" id="prop-text-size" min="8" max="72" oninput="updateTextSize(this.value)">
+      </div>
+    </div>
+
+    <!-- Опора -->
+    <div id="pole-props" style="display:none;">
+      <div class="prop-group">
+        <label>Наименование</label>
+        <input type="text" id="prop-name-pole" oninput="updateNodeName(this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Количество ответвлений</label>
+        <input type="number" id="pole-branches" min="0" oninput="updateNodeParam('branches_count', this.value); updateConnectionsInfo(selectedNodeIds[0])">
+      </div>
+      <div class="prop-group">
+        <label>Подключения</label>
+        <div id="connections-list">Загрузка...</div>
+      </div>
+    </div>
+
+    <!-- Трансформатор (ТП) -->
+    <div id="transformer-props" style="display:none;">
+      <div class="prop-group">
+        <label>Наименование</label>
+        <input type="text" id="prop-name-transformer" oninput="updateNodeName(this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Тип</label>
+        <input type="text" id="trans-type-name" readonly>
+      </div>
+      <div class="prop-group">
+        <label>ID в БД</label>
+        <input type="text" id="trans-db-id" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Номинальная мощность, кВА</label>
+        <input type="text" id="trans-nominal-power" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Потери ХХ, кВт</label>
+        <input type="text" id="trans-losses-xx" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Потери КЗ, кВт</label>
+        <input type="text" id="trans-losses-kz" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Напряжение ВН, кВ</label>
+        <input type="text" id="trans-voltage-hv" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Напряжение НН, кВ</label>
+        <input type="text" id="trans-voltage-lv" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Напряжение КЗ, %</label>
+        <input type="text" id="trans-voltage-kz" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Кол-во ступеней ПБВ</label>
+        <input type="text" id="trans-pbv-stages" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Шаг регулирования ПБВ, %</label>
+        <input type="text" id="trans-pbv-step" readonly>
+      </div>
+    </div>
+
+    <!-- Потребитель (Абонент) -->
+    <div id="consumer-props" style="display:none;">
+      <div class="prop-group">
+        <label>Наименование</label>
+        <input type="text" id="prop-name-consumer" oninput="updateNodeName(this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Тип</label>
+        <input type="text" id="consumer-type-name" readonly>
+      </div>
+      <div class="prop-group">
+        <label>ID в БД</label>
+        <input type="text" id="consumer-db-id" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Характер использования</label>
+        <input type="text" id="consumer-usage" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Адрес</label>
+        <input type="text" id="consumer-address" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Доп. данные</label>
+        <input type="text" id="consumer-extra" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Тип питания</label>
+        <input type="text" id="consumer-supply" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Кол-во фаз</label>
+        <input type="text" id="consumer-phase" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Метод расчета</label>
+        <input type="text" id="consumer-calc-method" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Годовое потребление, кВт·ч</label>
+        <input type="text" id="consumer-yearly" readonly>
+      </div>
+      <div class="prop-group">
+        <label>Расчетная активная мощность, кВт</label>
+        <input type="text" id="consumer-power" readonly>
+      </div>
+      <div class="prop-group">
+        <label>cos φ</label>
+        <input type="text" id="consumer-cosphi" readonly>
+      </div>
+    </div>
+
+    <!-- ЛЭП -->
+    <div id="line-props" style="display:none;">
+      <div class="prop-group">
+        <label>Наименование</label>
+        <input type="text" id="prop-name-line" oninput="updateLineName(this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Марка ЛЭП</label>
+        <input type="text" id="prop-mark" oninput="updateLineParam('mark', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Материал провода</label>
+        <input type="text" id="prop-material" oninput="updateLineParam('material', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Материал изоляции</label>
+        <input type="text" id="prop-insulation" oninput="updateLineParam('insulation', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Количество жил</label>
+        <input type="text" id="prop-cores" oninput="updateLineParam('cores_count', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Сечение фазного провода, мм²</label>
+        <input type="text" id="prop-cross-section" oninput="updateLineParam('cross_section', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Сопротивление фазного, Ом/км</label>
+        <input type="text" id="prop-r-phase" oninput="updateLineParam('r_phase_ohm_km', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Сопротивление нулевого, Ом/км</label>
+        <input type="text" id="prop-r-null" oninput="updateLineParam('r_null_ohm_km', this.value)">
+      </div>
+      <div class="prop-group">
+        <label>Сопротивление доп. провода, Ом/км</label>
+        <input type="text" id="prop-r-add" oninput="updateLineParam('r_add_ohm_km', this.value)">
+      </div>
+
+      <div id="point-editor">
+        <div class="prop-group">
+          <label>Координаты точки</label>
+          <input type="number" id="prop-pt-x" placeholder="X" oninput="manualMovePoint()">
+          <input type="number" id="prop-pt-y" placeholder="Y" oninput="manualMovePoint()">
+        </div>
+      </div>
+
+      <div class="prop-group">
+        <label>Привязки концов</label>
+        <div style="display:flex;gap:8px;">
+          <button id="btn-unlink-start" onclick="modifyLink('start')">Отвязать начало</button>
+          <button id="btn-unlink-end" onclick="modifyLink('end')">Отвязать конец</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Контекстное меню -->
+<div id="context-menu">
+  <button onclick="deleteSelected()">Удалить объект</button>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

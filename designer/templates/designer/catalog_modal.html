@@ -1,0 +1,411 @@
+<style>
+    /* ==========================================
+       СТИЛИ МОДАЛЬНОГО ОКНА КАТАЛОГА
+       ========================================== */
+
+    #catalog-modal {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        display: none;
+        z-index: 9999 !important;
+        justify-content: center;
+        align-items: center;
+        font-family: 'Segoe UI', Tahoma, sans-serif;
+    }
+
+    .catalog-modal-content {
+        background: #181818;
+        padding: 25px;
+        border-radius: 8px;
+        border: 1px solid #333;
+        width: 750px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.9);
+        color: #fff;
+    }
+
+    .catalog-close-btn {
+        align-self: flex-end;
+        cursor: pointer;
+        font-size: 20px;
+        color: #888;
+        margin-bottom: 10px;
+        transition: color 0.2s;
+    }
+    .catalog-close-btn:hover {
+        color: #ff5252;
+    }
+
+    .catalog-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+
+    .catalog-controls input {
+        flex-grow: 1;
+        padding: 10px 15px;
+        background: #242424;
+        color: #fff;
+        border: 1px solid #333;
+        border-radius: 6px;
+        outline: none;
+        font-family: inherit;
+        font-size: 14px;
+        transition: border-color 0.2s;
+    }
+    .catalog-controls input:focus {
+        border-color: #2ecc71;
+    }
+
+    .catalog-table-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        border: 1px solid #333;
+        border-radius: 6px;
+        background: #1a1a1a;
+        max-height: 400px;
+    }
+
+    .catalog-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        text-align: left;
+    }
+
+    .catalog-table th {
+        background: #2b2b2b;
+        padding: 12px 15px;
+        border-bottom: 1px solid #333;
+        color: #888;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    .catalog-table td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #222;
+    }
+
+    .catalog-table tr {
+        transition: background 0.1s;
+    }
+
+    .catalog-table tr:hover {
+        background: #2a2a2a;
+    }
+
+    .btn-select-item {
+        padding: 8px 16px;
+        background: #2ecc71;
+        color: #000;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 12px;
+        transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-select-item:hover {
+        background: #27ae60;
+    }
+
+    .btn-select-item:active {
+        transform: scale(0.95);
+    }
+
+    .catalog-pagination {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        font-size: 13px;
+        color: #888;
+    }
+
+    .catalog-pagination button {
+        padding: 8px 15px;
+        background: #2b2b2b;
+        color: #fff;
+        border: 1px solid #333;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.2s;
+        font-weight: 600;
+    }
+
+    .catalog-pagination button:hover:not(:disabled) {
+        background: #2ecc71;
+        color: #000;
+        border-color: #2ecc71;
+    }
+
+    .catalog-pagination button:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    .catalog-btn {
+        width: 100%;
+        padding: 12px;
+        background: #2b2b2b;
+        border: 1px solid #333;
+        border-radius: 6px;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 600;
+        margin-bottom: 8px;
+        text-align: left;
+        font-size: 13px;
+    }
+    
+    .catalog-btn:hover {
+        background: #333;
+        border-color: #2ecc71;
+        color: #2ecc71;
+    }
+
+    /* ===== Светлая тема для каталога ===== */
+    body.light-theme #catalog-modal { background: rgba(0, 0, 0, 0.35) !important; }
+    body.light-theme .catalog-modal-content {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #d1d5db;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.25);
+    }
+    body.light-theme #catalog-title { color: #27ae60 !important; }
+    body.light-theme .catalog-close-btn { color: #5a6270; }
+    body.light-theme .catalog-close-btn:hover { color: #e74c3c; }
+
+    body.light-theme .catalog-controls input {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #d1d5db;
+    }
+    body.light-theme .catalog-controls input:focus { border-color: #27ae60; }
+
+    body.light-theme .catalog-table-container {
+        background: #f5f6f8;
+        border-color: #d1d5db;
+    }
+    body.light-theme .catalog-table th {
+        background: #eceef2;
+        color: #5a6270;
+        border-bottom-color: #d1d5db;
+    }
+    body.light-theme .catalog-table td {
+        border-bottom-color: #e5e7eb;
+        color: #1a1a1a;
+    }
+    body.light-theme .catalog-table tr:hover { background: #eceef2; }
+    body.light-theme .catalog-table tbody td[colspan] { color: #5a6270 !important; }
+
+    body.light-theme .catalog-pagination { color: #5a6270; }
+    body.light-theme .catalog-pagination button {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #d1d5db;
+    }
+    body.light-theme .catalog-pagination button:hover:not(:disabled) {
+        background: #27ae60;
+        color: #ffffff;
+        border-color: #27ae60;
+    }
+
+    body.light-theme .catalog-btn {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #d1d5db;
+    }
+    body.light-theme .catalog-btn:hover {
+        background: #eceef2;
+        border-color: #27ae60;
+        color: #27ae60;
+    }
+</style>
+
+<div id="catalog-modal" onclick="if(event.target === this) window.closeCatalogModal()">
+    <div class="catalog-modal-content">
+        <span class="catalog-close-btn" onclick="window.closeCatalogModal()">✕</span>
+        <h3 id="catalog-title" style="margin-top:0; margin-bottom: 15px; color: #2ecc71; font-size: 18px;">Справочник</h3>
+
+        <div class="catalog-controls">
+            <input type="text" id="catalog-search" placeholder="Поиск по марке/названию..." onkeypress="if(event.key === 'Enter') window.performCatalogSearch()">
+            <button class="btn-select-item" style="padding: 10px 25px; font-size: 13px;" onclick="window.performCatalogSearch()">Найти</button>
+        </div>
+
+        <div class="catalog-table-container">
+            <table class="catalog-table">
+                <thead>
+                    <tr>
+                        <th>Марка / Тип</th>
+                        <th style="width: 100px; text-align: center;">Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="catalog-table-body">
+                    <tr><td colspan="2" style="text-align:center; padding: 40px; color: #888;">Загрузка данных...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="catalog-pagination">
+            <button id="btn-cat-prev" onclick="window.changeCatalogPage(-1)">◀ Назад</button>
+            <span id="cat-page-info">Страница 1</span>
+            <button id="btn-cat-next" onclick="window.changeCatalogPage(1)">Вперед ▶</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.currentCatalogCategory = '';
+    window.currentCatalogPage = 1;
+
+    window.openCatalogModal = function(category, title) {
+        window.currentCatalogCategory = category;
+        window.currentCatalogPage = 1;
+        document.getElementById('catalog-title').innerText = `Каталог: ${title}`;
+        document.getElementById('catalog-search').value = '';
+        document.getElementById('catalog-modal').style.setProperty('display', 'flex', 'important');
+        window.fetchCatalogData();
+    };
+
+    window.closeCatalogModal = function() {
+        document.getElementById('catalog-modal').style.setProperty('display', 'none', 'important');
+    };
+
+    window.performCatalogSearch = function() {
+        window.currentCatalogPage = 1;
+        window.fetchCatalogData();
+    };
+
+    window.changeCatalogPage = function(delta) {
+        window.currentCatalogPage += delta;
+        window.fetchCatalogData();
+    };
+
+    window.fetchCatalogData = function() {
+        const tbody = document.getElementById('catalog-table-body');
+        const search = document.getElementById('catalog-search').value;
+
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding: 40px; color: #888;">Загрузка данных...</td></tr>';
+
+        fetch(`/get_catalog_nodes/?category=${window.currentCatalogCategory}&page=${window.currentCatalogPage}&search=${encodeURIComponent(search)}`)
+            .then(res => res.json())
+            .then(data => {
+                tbody.innerHTML = '';
+                if (!data.items || data.items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; padding: 40px; color: #888;">По вашему запросу ничего не найдено.</td></tr>';
+                    return;
+                }
+
+                data.items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const itemName = item.name ? item.name.toString() : 'Без названия';
+                    const safeName = itemName.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    const itemPower = item.power ? item.power.toString() : '';
+
+                    tr.innerHTML = `
+                        <td style="font-weight: 500;">${itemName} ${itemPower ? `(${itemPower} кВА)` : ''}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-select-item" onclick="window.selectItemFromCatalog(${item.id || 0}, '${safeName}', '${item.type}', '${itemPower}')">
+                                Выбрать
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                document.getElementById('cat-page-info').innerText = `Страница ${data.current_page} из ${data.total_pages}`;
+                document.getElementById('btn-cat-prev').disabled = data.current_page <= 1;
+                document.getElementById('btn-cat-next').disabled = data.current_page >= data.total_pages;
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="2" style="text-align:center; color:#ff5252; padding: 40px;">Ошибка соединения с сервером базы данных.</td></tr>';
+            });
+    };
+
+    window.selectItemFromCatalog = function(id, name, type, power) {
+        window.closeCatalogModal();
+
+        // Если выбран тип ЛЭП - загружаем параметры и активируем режим рисования
+        if (type === 'ЛЭП') {
+            // Загружаем параметры ЛЭП из БД
+            fetch(`/api/get_node_details/?db_id=${id}&type=ЛЭП`)
+                .then(res => res.json())
+                .then(data => {
+                    // Сохраняем данные для создания линии
+                    window.pendingLineData = {
+                        db_id: id,
+                        name: name,
+                        type: type,
+                        params: data.details || {}
+                    };
+                    // Активируем режим рисования ЛЭП
+                    if (typeof window.setMode === 'function') {
+                        window.setMode('DRAW');
+                    }
+                    document.getElementById('scene').style.cursor = 'crosshair';
+                });
+            return;
+        }
+
+        // Для остальных элементов (ТП, Абонент, Опора) - размещаем как узел
+        window.nodeToPlace = {
+            db_id: id,
+            name: name,
+            type: type,
+            power: power
+        };
+        document.getElementById('scene').style.cursor = 'crosshair';
+        
+        // Показываем фантом для узла
+        const previewLayer = document.getElementById('preview-layer');
+        if (previewLayer) {
+            const updatePreview = (e) => {
+                const getCoords = (e) => {
+                    const scene = document.getElementById('scene');
+                    const r = scene.getBoundingClientRect();
+                    const viewX = window.viewX || 0;
+                    const viewY = window.viewY || 0;
+                    const scale = window.scale || 1;
+                    return {
+                        x: (e.clientX - r.left - viewX) / scale,
+                        y: (e.clientY - r.top - viewY) / scale
+                    };
+                };
+                const snap = (v) => Math.round(v / 50) * 50;
+                
+                const moveHandler = (e) => {
+                    const c = getCoords(e);
+                    previewLayer.innerHTML = `
+                        <circle cx="${snap(c.x)}" cy="${snap(c.y)}" r="15" fill="rgba(46,204,113,0.4)" stroke="#2ecc71" stroke-width="2" stroke-dasharray="4"/>
+                        <text x="${snap(c.x)}" y="${snap(c.y) + 35}" fill="#fff" font-size="11" text-anchor="middle">${name}</text>
+                    `;
+                };
+                
+                const clickHandler = () => {
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('click', clickHandler);
+                };
+                
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('click', clickHandler);
+            };
+            
+            // Небольшая задержка для обновления
+            setTimeout(() => {
+                document.addEventListener('mousemove', updatePreview);
+            }, 100);
+        }
+    };
+</script>

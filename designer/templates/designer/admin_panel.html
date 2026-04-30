@@ -1,0 +1,3159 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoltStream Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #242424;
+            --bg-tertiary: #2d2d2d;
+            --bg-hover: #3a3a3a;
+            --text-primary: #e0e0e0;
+            --text-secondary: #999999;
+            --accent: #2ecc71;
+            --accent-hover: #27ae60;
+            --danger: #ff5252;
+            --danger-hover: #e74c3c;
+            --warning: #f39c12;
+            --border: #404040;
+            --input-bg: #1f1f1f;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ==========================================
+           HEADER
+           ========================================== */
+        .admin-header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .admin-role {
+            background: var(--accent);
+            color: #000;
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.75rem;
+        }
+
+        .admin-nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+        }
+
+        .nav-link:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--accent);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger-hover);
+        }
+
+        .admin-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .context-info {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .context-text {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .context-highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           TABS
+           ========================================== */
+        .tabs-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .tabs-header {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            background: var(--bg-tertiary);
+        }
+
+        .tab-btn {
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: var(--bg-secondary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ==========================================
+           DICTIONARY SECTIONS
+           ========================================== */
+        .dictionary-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        /* ==========================================
+           BUTTONS
+           ========================================== */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-success {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-success:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger-hover);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent);
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-icon {
+            padding: 0.25rem 0.5rem;
+            min-width: 32px;
+            justify-content: center;
+        }
+
+        /* ==========================================
+           TABLES
+           ========================================== */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .table-scroll {
+            overflow-x: auto;
+            max-height: 60vh;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        /* ==========================================
+           MODALS
+           ========================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            width: 92%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal--wide {
+            max-width: 1280px;
+        }
+
+        .modal-header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        /* ==========================================
+           FORMS
+           ========================================== */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            padding: 0.625rem 0.875rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.2);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .form-input:read-only {
+            background: var(--bg-tertiary);
+            cursor: not-allowed;
+        }
+
+        .form-select {
+            padding: 0.625rem 0.875rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .form-select option {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        /* ==========================================
+           PERMISSION / GROUP PICKER
+           ========================================== */
+        .perm-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            grid-column: 1 / -1;
+        }
+
+        .perm-picker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .perm-picker-counter {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .perm-picker-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .perm-picker-toolbar button {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 0.3rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .perm-picker-toolbar button:hover {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+
+        .perm-picker-search {
+            width: 100%;
+        }
+
+        .perm-picker-list {
+            height: auto;
+            min-height: 240px;
+            max-height: 75vh;
+            resize: vertical;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--input-bg);
+            padding: 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            transition: max-height 0.2s ease;
+        }
+
+        .perm-picker--groups .perm-picker-list {
+            min-height: 80px;
+            max-height: 35vh;
+        }
+
+        .perm-app {
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            background: var(--bg-secondary);
+            overflow: hidden;
+        }
+
+        .perm-app-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.625rem;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .perm-app-header .perm-arrow {
+            transition: transform 0.15s;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .perm-app.collapsed .perm-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .perm-app.collapsed .perm-app-body {
+            display: none;
+        }
+
+        .perm-app-body {
+            padding: 0.4rem 0.625rem 0.6rem 0.625rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .perm-model {
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: var(--input-bg);
+        }
+
+        .perm-model-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .perm-model-header strong {
+            color: var(--text-primary);
+        }
+
+        .perm-model.collapsed .perm-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .perm-model.collapsed .perm-model-body {
+            display: none;
+        }
+
+        .perm-model-body {
+            padding: 0.25rem 0.5rem 0.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .perm-bulk {
+            margin-left: auto;
+            font-size: 0.7rem;
+            color: var(--accent);
+            background: transparent;
+            border: 0;
+            cursor: pointer;
+            padding: 0 0.25rem;
+        }
+
+        .perm-bulk:hover {
+            text-decoration: underline;
+        }
+
+        .perm-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            font-size: 0.8125rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            padding: 0.2rem 0.375rem;
+            border-radius: 3px;
+        }
+
+        .perm-row:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .perm-row input[type="checkbox"] {
+            margin-top: 0.15rem;
+            accent-color: var(--accent);
+        }
+
+        .perm-picker-empty {
+            color: var(--text-secondary);
+            font-size: 0.8125rem;
+            font-style: italic;
+            padding: 0.5rem;
+        }
+
+        .perm-app[hidden],
+        .perm-model[hidden],
+        .perm-row[hidden] {
+            display: none !important;
+        }
+
+        .perm-app.perm-fully > .perm-app-header,
+        .perm-model.perm-fully > .perm-model-header {
+            box-shadow: inset 3px 0 0 var(--accent);
+        }
+
+        .perm-app.perm-partial > .perm-app-header,
+        .perm-model.perm-partial > .perm-model-header {
+            box-shadow: inset 3px 0 0 #f1c40f;
+        }
+
+        .perm-app.perm-fully .perm-app-counter .perm-sel,
+        .perm-model.perm-fully .perm-model-counter .perm-sel {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        .perm-app.perm-partial .perm-app-counter .perm-sel,
+        .perm-model.perm-partial .perm-model-counter .perm-sel {
+            color: #f1c40f;
+            font-weight: 700;
+        }
+
+        /* ==========================================
+           EXISTING SECTIONS
+           ========================================== */
+        .existing-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .existing-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .existing-section p {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* ==========================================
+           NOTIFICATIONS
+           ========================================== */
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification-success {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .notification-error {
+            background: var(--danger);
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ==========================================
+           SEARCH & PAGINATION
+           ========================================== */
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.625rem 0.875rem;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-secondary); }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
+
+        .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 44px;
+            text-align: center;
+        }
+
+        .pagination-btn:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--accent); }
+        .pagination-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        .pagination-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .pagination-info { color: var(--text-secondary); font-size: 0.875rem; margin: 0 1rem; }
+
+        /* ==========================================
+           СТРУКТУРА ДЕРЕВА В АДМИНКЕ (НОВОЕ/ОБНОВЛЕННОЕ)
+           ========================================== */
+        .tree-details-admin { margin-left: 15px; border-left: 1px dashed var(--border); padding-left: 10px; margin-top: 5px; }
+        .tree-summary-admin {
+            cursor: pointer;
+            padding: 6px 10px 6px 0;
+            outline: none;
+            user-select: none;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .tree-summary-admin:hover { background: rgba(255,255,255,0.05); border-radius: 4px; }
+        .tree-summary-admin::-webkit-details-marker { display: none; }
+        .tree-node-content { display: flex; align-items: center; gap: 8px; }
+        .tree-node-content:hover { color: var(--accent); }
+        .tree-node-content::before { content: '▶'; font-size: 10px; color: var(--text-secondary); transition: transform 0.2s; }
+        .tree-details-admin[open] > .tree-summary-admin .tree-node-content::before { transform: rotate(90deg); }
+        .tree-details-admin[open] > .tree-summary-admin .tree-node-content { color: var(--accent); font-weight: 600; }
+
+        .tree-file-admin {
+            margin-left: 20px;
+            padding: 6px 10px;
+            color: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            transition: 0.2s;
+            border-radius: 4px;
+            margin-top: 2px;
+            font-size: 0.9rem;
+        }
+        .tree-file-admin:hover { color: #fff; background: rgba(46, 204, 113, 0.15); }
+
+        /* ==========================================
+           СВЕТЛАЯ ТЕМА
+           ========================================== */
+        body.light-theme {
+            --bg-primary: #f5f6f8;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #eceef2;
+            --bg-hover: #dde1e8;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a6270;
+            --accent: #27ae60;
+            --accent-hover: #2ecc71;
+            --danger: #e74c3c;
+            --danger-hover: #ff5252;
+            --warning: #e67e22;
+            --border: #d1d5db;
+            --input-bg: #ffffff;
+        }
+        body.light-theme .admin-header {
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        body.light-theme .admin-title { color: var(--text-primary); }
+        body.light-theme .admin-role { color: #ffffff; }
+        body.light-theme .context-info { background: #ffffff; border-color: var(--border); }
+        body.light-theme .dictionary-section { background: #ffffff; border-color: var(--border); }
+        body.light-theme .section-header { background: #f5f6f8; border-bottom-color: var(--border); }
+        body.light-theme .tabs-container { background: #ffffff; }
+        body.light-theme .tabs-header { background: #f5f6f8; border-bottom-color: var(--border); }
+        body.light-theme .tab-btn { color: var(--text-secondary); }
+        body.light-theme .tab-btn:hover { background: #eceef2; color: var(--text-primary); }
+        body.light-theme .tab-btn.active { background: #ffffff; color: var(--accent); border-bottom-color: var(--accent); }
+        body.light-theme .data-table th { background: #f5f6f8; color: var(--text-secondary); border-bottom-color: var(--border); }
+        body.light-theme .data-table td { border-bottom-color: #e5e7eb; color: var(--text-primary); }
+        body.light-theme .data-table tr:hover { background: #f5f6f8; }
+        body.light-theme .btn-primary { background: var(--accent); color: #ffffff; }
+        body.light-theme .btn-primary:hover { background: var(--accent-hover); }
+        body.light-theme .btn-secondary { background: #ffffff; color: var(--text-primary); border-color: var(--border); }
+        body.light-theme .btn-secondary:hover { background: #eceef2; }
+        body.light-theme .btn-danger { background: var(--danger); color: #ffffff; }
+        body.light-theme .btn-danger:hover { background: var(--danger-hover); }
+        body.light-theme .modal { background: #ffffff; border-color: var(--border); box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+        body.light-theme .modal-overlay { background: rgba(0,0,0,0.35); }
+        body.light-theme .modal-header { border-bottom-color: var(--border); }
+        body.light-theme .modal-title { color: var(--text-primary); }
+        body.light-theme .modal-close { color: var(--text-secondary); }
+        body.light-theme .form-group label { color: var(--text-secondary); }
+        body.light-theme .form-input,
+        body.light-theme .form-select,
+        body.light-theme .form-textarea,
+        body.light-theme input[type="text"],
+        body.light-theme input[type="number"],
+        body.light-theme input[type="email"],
+        body.light-theme input[type="password"],
+        body.light-theme select,
+        body.light-theme textarea {
+            background: #ffffff;
+            color: var(--text-primary);
+            border-color: var(--border);
+        }
+        body.light-theme .search-input { background: #ffffff; color: var(--text-primary); border-color: var(--border); }
+        body.light-theme .tree-summary-admin { color: var(--text-primary); }
+        body.light-theme .tree-summary-admin:hover { background: rgba(39,174,96,0.08); }
+        body.light-theme .tree-node-content::before { color: var(--text-secondary); }
+        body.light-theme .tree-details-admin[open] > .tree-summary-admin .tree-node-content { color: var(--accent); }
+        body.light-theme .tree-details-admin { border-left-color: var(--border); }
+        body.light-theme .tree-file-admin { color: #4a5160; }
+        body.light-theme .tree-file-admin:hover { color: var(--text-primary); background: rgba(39,174,96,0.1); }
+        body.light-theme .empty-state { color: var(--text-secondary); }
+        body.light-theme .pagination-container button { background: #ffffff; color: var(--text-primary); border-color: var(--border); }
+        body.light-theme .pagination-container button:hover:not(:disabled) { background: #eceef2; border-color: var(--accent); }
+        body.light-theme .nav-link { color: var(--text-secondary); border-color: var(--border); }
+        body.light-theme .nav-link:hover { background: #eceef2; color: var(--text-primary); border-color: var(--accent); }
+        body.light-theme ::-webkit-scrollbar-track { background: #eceef2; }
+        body.light-theme ::-webkit-scrollbar-thumb { background: #b8bfca; }
+        body.light-theme ::-webkit-scrollbar-thumb:hover { background: #9aa2ae; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div style="display: flex; align-items: center;">
+            <h1 class="admin-title">⚡ VoltStream Admin</h1>
+            <span class="admin-role">{% if is_super %}Супер-Админ{% else %}Админ организации{% endif %}</span>
+        </div>
+        <nav class="admin-nav">
+            <a href="{% url 'editor' %}" class="nav-link">← В редактор схем</a>
+            <span style="color: var(--text-secondary); font-size: 0.875rem;">
+                Контекст: {% if is_super %}<span class="context-highlight">Глобальное управление</span>{% else %}{{ request.user.profile.organization.name|default:"РЭС не указан" }}{% endif %}
+            </span>
+            <span style="color: var(--text-secondary); font-size: 0.875rem; margin-left: 1rem;">
+                Вы вошли как: <span class="context-highlight">{{ request.user.username }}</span>
+            </span>
+            <button id="btn-theme-toggle" class="nav-link" onclick="toggleTheme()" title="Переключить между тёмной и светлой темой" style="cursor:pointer; background:transparent;">🌙 Тёмная</button>
+            <a href="{% url 'logout' %}" class="logout-btn">🚪 Выйти</a>
+        </nav>
+    </header>
+
+    <div class="admin-container">
+        <div class="context-info">
+            <div>
+                <p class="context-text">Панель администратора системы VoltStream</p>
+                <p class="context-text" style="margin-top: 0.25rem;">
+                    {% if is_super %}
+                        <span class="context-highlight">Глобальное управление</span> — полный доступ ко всем организациям и справочникам
+                    {% else %}
+                        <span class="context-highlight">{{ request.user.profile.organization.name|default:"РЭС не указан" }}</span> — управление в пределах организации
+                    {% endif %}
+                </p>
+            </div>
+            <div style="text-align: right;">
+                <p class="context-text">Дата: <span class="context-highlight" id="current-date"></span></p>
+                <p class="context-text">Время: <span class="context-highlight" id="current-time"></span></p>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <div class="tabs-header">
+                <button class="tab-btn" data-tab="registry">🗂️ Реестр сетей</button>
+                <button class="tab-btn active" data-tab="transformers">🔌 Трансформаторы</button>
+                <button class="tab-btn" data-tab="lines">⚡ ЛЭП</button>
+                <button class="tab-btn" data-tab="consumers">🏠 Потребители</button>
+                <button class="tab-btn" data-tab="organizations">🏢 Организации</button>
+                <button class="tab-btn" data-tab="users">👥 Пользователи</button>
+                <button class="tab-btn" data-tab="existing">📋 Управление</button>
+            </div>
+
+            <div class="tab-content" id="tab-registry">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Структура реестра (Дерево папок)</h3>
+                    </div>
+                    <div style="padding: 1.5rem; max-height: 60vh; overflow-y: auto; background: var(--bg-primary);">
+                        <div id="admin-registry-tree">
+                            <div class="empty-state">Загрузка структуры дерева...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-content active" id="tab-transformers">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Справочник трансформаторов (ТП)</h3>
+                        <div class="section-actions">
+                            <button class="btn btn-primary" onclick="openTransformerModal()">+ Добавить трансформатор</button>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="transformer-search" placeholder="Поиск по названию..." onkeyup="searchTransformers()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Тип трансформатора</th>
+                                    <th>Мощность, кВА</th>
+                                    <th>Потери ХХ, кВт</th>
+                                    <th>Потери КЗ, кВт</th>
+                                    <th>Напряжение ВН, кВ</th>
+                                    <th>Напряжение НН, кВ</th>
+                                    <th>Напряжение КЗ, %</th>
+                                    <th>Ступени ПБВ</th>
+                                    <th>Шаг ПБВ, %</th>
+                                    <th style="width: 120px;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transformers-table-body">
+                                <tr><td colspan="11" class="empty-state">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container" id="transformers-pagination"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-lines">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Справочник ЛЭП</h3>
+                        <div class="section-actions">
+                            <button class="btn btn-primary" onclick="openLineModal()">+ Добавить ЛЭП</button>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="line-search" placeholder="Поиск по марке..." onkeyup="searchLines()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Марка ЛЭП</th>
+                                    <th>Материал провода</th>
+                                    <th>Изоляция</th>
+                                    <th>Кол-во жил</th>
+                                    <th>Сечение, мм²</th>
+                                    <th>R фазного, Ом/км</th>
+                                    <th>R нулевого, Ом/км</th>
+                                    <th>R доп., Ом/км</th>
+                                    <th style="width: 120px;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="lines-table-body">
+                                <tr><td colspan="10" class="empty-state">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container" id="lines-pagination"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-consumers">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Справочник потребителей (Абоненты)</h3>
+                        <div class="section-actions">
+                            <button class="btn btn-primary" onclick="openConsumerModal()">+ Добавить потребителя</button>
+                        </div>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="consumer-search" placeholder="Поиск по названию..." onkeyup="searchConsumers()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Тип потребителя</th>
+                                    <th>Характер потребления</th>
+                                    <th>Адрес</th>
+                                    <th>Питание</th>
+                                    <th>Фаза</th>
+                                    <th>Мощность, кВт</th>
+                                    <th>Годовое, кВт*ч</th>
+                                    <th>cos φ</th>
+                                    <th style="width: 120px;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="consumers-table-body">
+                                <tr><td colspan="10" class="empty-state">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container" id="consumers-pagination"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-organizations">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Справочник организаций</h3>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="organization-search" placeholder="Поиск по названию..." onkeyup="searchOrganizations()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Название</th>
+                                    <th>Регион / Адрес</th>
+                                    <th>Телефон</th>
+                                    <th>Факс</th>
+                                    <th style="width: 120px;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="organizations-table-body">
+                                <tr><td colspan="6" class="empty-state">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container" id="organizations-pagination"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-users">
+                <div class="dictionary-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Справочник пользователей</h3>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" class="search-input" id="user-search" placeholder="Поиск по логину..." onkeyup="searchUsers()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Логин</th>
+                                    <th>Email</th>
+                                    <th>ФИО</th>
+                                    <th>Отчество</th>
+                                    <th>Телефон</th>
+                                    <th>Организация</th>
+                                    <th>Роль</th>
+                                    <th style="width: 120px;">Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-table-body">
+                                <tr><td colspan="9" class="empty-state">Загрузка данных...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination-container" id="users-pagination"></div>
+                </div>
+            </div>
+
+            <div class="tab-content" id="tab-existing">
+                {% if is_super %}
+                <div class="existing-section">
+                    <h3>🏢 Управление организацией</h3>
+                    <p>Создание структуры предприятий и РЭС.</p>
+                    <form id="create-org-form" onsubmit="handleCreateOrg(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Название организации *</label>
+                                <input type="text" name="name" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Регион / Область</label>
+                                <input type="text" name="region" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Номер телефона</label>
+                                <input type="text" name="phone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Факс</label>
+                                <input type="text" name="fax" class="form-input">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-success" style="margin-top: 1rem;">Создать организацию</button>
+                    </form>
+                </div>
+                {% endif %}
+
+                <div class="existing-section">
+                    <h3>👥 Управление пользователями</h3>
+                    <p>Создание сотрудников и назначение ролей.</p>
+                    <form id="create-user-form" onsubmit="handleCreateUser(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Логин *</label>
+                                <input type="text" name="login" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Почта (Email) *</label>
+                                <input type="email" name="email" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Пароль *</label>
+                                <input type="password" name="password" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Номер телефона</label>
+                                <input type="text" name="phone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Фамилия</label>
+                                <input type="text" name="last_name" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Имя</label>
+                                <input type="text" name="first_name" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Отчество</label>
+                                <input type="text" name="patronymic" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Организация</label>
+                                <select name="organization_id" class="form-select">
+                                    {% if is_super %}
+                                        <option value="">-- Выберите организацию --</option>
+                                    {% endif %}
+                                    {% for org in organizations %}
+                                        <option value="{{ org.id }}">{{ org.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Роль *</label>
+                                <select name="role" class="form-select" required>
+                                    <option value="engineer">Инженер</option>
+                                    <option value="admin">Администратор (Локальный)</option>
+                                    <option value="viewer">Пользователь (Просмотр)</option>
+                                    {% if is_super %}
+                                        <option value="superuser">Суперпользователь (Глобальный)</option>
+                                    {% endif %}
+                                </select>
+                            </div>
+                            {% if is_super %}
+                            <div class="perm-picker perm-picker--groups">
+                                <div class="perm-picker-header">
+                                    <label class="form-label" style="margin: 0;">Группы</label>
+                                    <div class="perm-picker-toolbar">
+                                        <button type="button" onclick="toggleAllPicker('create-groups-list', true)">Выбрать все</button>
+                                        <button type="button" onclick="toggleAllPicker('create-groups-list', false)">Очистить</button>
+                                    </div>
+                                    <span class="perm-picker-counter" id="create-groups-counter">выбрано: 0</span>
+                                </div>
+                                <input type="text" class="form-input perm-picker-search"
+                                       placeholder="🔍 Поиск группы..."
+                                       oninput="filterPicker('create-groups-list', this.value)">
+                                <div class="perm-picker-list" id="create-groups-list">
+                                    <div class="perm-picker-empty">Загрузка…</div>
+                                </div>
+                            </div>
+                            <div class="perm-picker">
+                                <div class="perm-picker-header">
+                                    <label class="form-label" style="margin: 0;">Права пользователя</label>
+                                    <div class="perm-picker-toolbar">
+                                        <button type="button" onclick="applyRolePreset('create-perms-list', document.querySelector('#create-user-form [name=role]').value)">Применить пресет роли</button>
+                                        <button type="button" onclick="toggleAllPicker('create-perms-list', true)">Выбрать все</button>
+                                        <button type="button" onclick="toggleAllPicker('create-perms-list', false)">Очистить</button>
+                                    </div>
+                                    <span class="perm-picker-counter" id="create-perms-counter">выбрано: 0</span>
+                                </div>
+                                <input type="text" class="form-input perm-picker-search"
+                                       placeholder="🔍 Поиск права..."
+                                       oninput="filterPicker('create-perms-list', this.value)">
+                                <div class="perm-picker-list" id="create-perms-list">
+                                    <div class="perm-picker-empty">Загрузка…</div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <button type="submit" class="btn btn-success" style="margin-top: 1rem;">Создать пользователя</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="folder-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="folder-modal-title">Добавить папку</h3>
+                <button class="modal-close" onclick="closeFolderModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="folder-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Название папки (Узел) *</label>
+                        <input type="text" id="folder-name" class="form-input" required placeholder="Например: ул. Советская">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Родительская папка</label>
+                        <select id="folder-parent" class="form-select">
+                            <option value="">-- Корень (Базовый уровень) --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Организация</label>
+                        <select id="folder-org" class="form-select">
+                            {% if is_super %}
+                                <option value="">— Общая (видна всем) —</option>
+                            {% endif %}
+                            {% for org in organizations %}
+                                <option value="{{ org.id }}">{{ org.name }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if not is_super %}
+                        <small style="color: var(--text-secondary); font-size: 11px;">Папка будет создана в вашей организации.</small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeFolderModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveFolder()">Сохранить папку</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="transformer-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="transformer-modal-title">Добавить трансформатор</h3>
+                <button class="modal-close" onclick="closeTransformerModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="transformer-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Тип трансформатора</label>
+                        <input type="text" id="transformer-type_name" class="form-input" placeholder="Например: ТМГ-1000/10">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Номинальная мощность, кВА</label>
+                        <input type="number" id="transformer-nominal_power" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Потери ХХ, кВт</label>
+                        <input type="number" id="transformer-losses_no_load" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Потери КЗ, кВт</label>
+                        <input type="number" id="transformer-losses_short_circuit" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Напряжение ВН, кВ</label>
+                        <input type="number" id="transformer-voltage_hv" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Напряжение НН, кВ</label>
+                        <input type="number" id="transformer-voltage_lv" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Напряжение КЗ, %</label>
+                        <input type="number" id="transformer-voltage_short_circuit_pct" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Кол-во ступеней ПБВ</label>
+                        <input type="number" id="transformer-pbv_stages_count" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Шаг ступени ПБВ, %</label>
+                        <input type="number" id="transformer-pbv_step_pct" class="form-input" step="0.1">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTransformerModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveTransformer()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="line-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="line-modal-title">Добавить ЛЭП</h3>
+                <button class="modal-close" onclick="closeLineModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="line-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Марка ЛЭП</label>
+                        <input type="text" id="line-mark" class="form-input" placeholder="Например: АСБ 3x150">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Материал провода</label>
+                        <input type="text" id="line-material" class="form-input" placeholder="Например: Алюминий">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Материал изоляции</label>
+                        <input type="text" id="line-insulation" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Количество жил</label>
+                        <input type="number" id="line-cores_count" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сечение фазного провода, мм²</label>
+                        <input type="number" id="line-cross_section" class="form-input" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сопротивление фазного, Ом/км</label>
+                        <input type="number" id="line-r_phase_ohm_km" class="form-input" step="0.001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сопротивление нулевого, Ом/км</label>
+                        <input type="number" id="line-r_null_ohm_km" class="form-input" step="0.001">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Сопротивление доп. провода, Ом/км</label>
+                        <input type="number" id="line-r_add_ohm_km" class="form-input" step="0.001">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeLineModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveLine()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="consumer-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="consumer-modal-title">Добавить потребителя</h3>
+                <button class="modal-close" onclick="closeConsumerModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="consumer-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Тип потребителя</label>
+                        <input type="text" id="consumer-name" class="form-input" placeholder="Например: Жилой дом">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Характер потребления</label>
+                        <input type="text" id="consumer-usage_character" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Адрес</label>
+                        <input type="text" id="consumer-address" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Дополнительные данные</label>
+                        <input type="text" id="consumer-additional_data" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Питание</label>
+                        <input type="text" id="consumer-supply_type" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Номер фазы</label>
+                        <input type="number" id="consumer-phase_number" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Метод расчёта</label>
+                        <input type="text" id="consumer-calc_method" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Годовое потребление, кВт*ч</label>
+                        <input type="number" id="consumer-yearly_consumption_kwh" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Расчётная активная мощность, кВт</label>
+                        <input type="number" id="consumer-calculated_active_power_kw" class="form-input" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Коэффициент мощности (cos φ)</label>
+                        <input type="number" id="consumer-cos_phi" class="form-input" step="0.01" min="0" max="1">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeConsumerModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveConsumer()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="organization-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="organization-modal-title">Добавить организацию</h3>
+                <button class="modal-close" onclick="closeOrganizationModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="organization-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Название организации *</label>
+                        <input type="text" id="organization-name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Регион / Адрес</label>
+                        <input type="text" id="organization-address" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <input type="text" id="organization-phone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Факс</label>
+                        <input type="text" id="organization-fax" class="form-input">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeOrganizationModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveOrganization()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="user-modal">
+        <div class="modal modal--wide">
+            <div class="modal-header">
+                <h3 class="modal-title" id="user-modal-title">Редактировать пользователя</h3>
+                <button class="modal-close" onclick="closeUserModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="user-id">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Логин</label>
+                        <input type="text" id="user-username" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" id="user-email" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Фамилия</label>
+                        <input type="text" id="user-last_name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Имя</label>
+                        <input type="text" id="user-first_name" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Отчество</label>
+                        <input type="text" id="user-patronymic" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Телефон</label>
+                        <input type="text" id="user-phone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Организация</label>
+                        <input type="text" id="user-organization" class="form-input" readonly>
+                    </div>
+                    {% if is_super %}
+                    <div class="form-group">
+                        <label class="form-label">Администратор (is_staff)</label>
+                        <select id="user-is_staff" class="form-select">
+                            <option value="false">Нет</option>
+                            <option value="true">Да</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Суперпользователь (is_superuser)</label>
+                        <select id="user-is_superuser" class="form-select">
+                            <option value="false">Нет</option>
+                            <option value="true">Да — глобальный доступ</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Активный (is_active)</label>
+                        <select id="user-is_active" class="form-select">
+                            <option value="true">Да</option>
+                            <option value="false">Нет</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">Новый пароль (оставьте пустым, чтобы не менять)</label>
+                        <input type="password" id="user-password" class="form-input" autocomplete="new-password">
+                    </div>
+                    <div class="perm-picker perm-picker--groups">
+                        <div class="perm-picker-header">
+                            <label class="form-label" style="margin: 0;">Группы</label>
+                            <div class="perm-picker-toolbar">
+                                <button type="button" onclick="toggleAllPicker('edit-groups-list', true)">Выбрать все</button>
+                                <button type="button" onclick="toggleAllPicker('edit-groups-list', false)">Очистить</button>
+                            </div>
+                            <span class="perm-picker-counter" id="edit-groups-counter">выбрано: 0</span>
+                        </div>
+                        <input type="text" class="form-input perm-picker-search"
+                               placeholder="🔍 Поиск группы..."
+                               oninput="filterPicker('edit-groups-list', this.value)">
+                        <div class="perm-picker-list" id="edit-groups-list">
+                            <div class="perm-picker-empty">Загрузка…</div>
+                        </div>
+                    </div>
+                    <div class="perm-picker">
+                        <div class="perm-picker-header">
+                            <label class="form-label" style="margin: 0;">Права пользователя</label>
+                            <div class="perm-picker-toolbar">
+                                <button type="button" onclick="applyRolePresetForEdit()">Пресет: суперюзер</button>
+                                <button type="button" onclick="applyRolePresetForEdit('admin')">Пресет: лок. админ</button>
+                                <button type="button" onclick="applyRolePresetForEdit('engineer')">Пресет: инженер</button>
+                                <button type="button" onclick="applyRolePresetForEdit('viewer')">Пресет: просмотр</button>
+                                <button type="button" onclick="toggleAllPicker('edit-perms-list', true)">Выбрать все</button>
+                                <button type="button" onclick="toggleAllPicker('edit-perms-list', false)">Очистить</button>
+                            </div>
+                            <span class="perm-picker-counter" id="edit-perms-counter">выбрано: 0</span>
+                        </div>
+                        <input type="text" class="form-input perm-picker-search"
+                               placeholder="🔍 Поиск права..."
+                               oninput="filterPicker('edit-perms-list', this.value)">
+                        <div class="perm-picker-list" id="edit-perms-list">
+                            <div class="perm-picker-empty">Загрузка…</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeUserModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveUser()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification-container"></div>
+
+    <script>
+        const ITEMS_PER_PAGE = 20;
+
+        const paginationState = {
+            transformers: { currentPage: 1, data: [] },
+            lines: { currentPage: 1, data: [] },
+            consumers: { currentPage: 1, data: [] },
+            organizations: { currentPage: 1, data: [] },
+            users: { currentPage: 1, data: [] }
+        };
+
+        function applyStoredTheme() {
+            const stored = localStorage.getItem('voltstream_theme');
+            const isLight = stored === 'light';
+            document.body.classList.toggle('light-theme', isLight);
+            const btn = document.getElementById('btn-theme-toggle');
+            if (btn) btn.innerHTML = isLight ? '☀️ Светлая' : '🌙 Тёмная';
+        }
+        window.toggleTheme = function() {
+            const isLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('voltstream_theme', isLight ? 'light' : 'dark');
+            const btn = document.getElementById('btn-theme-toggle');
+            if (btn) btn.innerHTML = isLight ? '☀️ Светлая' : '🌙 Тёмная';
+        };
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'voltstream_theme') applyStoredTheme();
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            applyStoredTheme();
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            initTabs();
+            loadTransformers();
+            loadLines();
+            loadConsumers();
+            loadOrganizations();
+            loadUsers();
+            initCreatePickers();
+        });
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ru-RU');
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('ru-RU');
+        }
+
+        function initTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    document.getElementById('tab-' + tabId).classList.add('active');
+
+                    if (tabId === 'registry') loadRegistry();
+                    if (tabId === 'transformers') loadTransformers();
+                    if (tabId === 'lines') loadLines();
+                    if (tabId === 'consumers') loadConsumers();
+                    if (tabId === 'organizations') loadOrganizations();
+                    if (tabId === 'users') {
+                        loadUsers();
+                        initCreatePickers();
+                    }
+                });
+            });
+        }
+
+        function showNotification(message, type) {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = 'notification notification-' + type;
+            notification.textContent = message;
+            container.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function renderPagination(type, totalItems) {
+            const container = document.getElementById(type + '-pagination');
+            const state = paginationState[type];
+            const currentPage = state.currentPage;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+
+            if (totalPages <= 1) { container.innerHTML = ''; return; }
+
+            let html = '';
+            html += '<button class="pagination-btn ' + (currentPage === 1 ? 'active' : '') + '" onclick="goToPage(\'' + type + '\', 1)" ' + (currentPage === 1 ? 'disabled' : '') + '>Первая</button>';
+            if (currentPage > 1) { html += '<button class="pagination-btn" onclick="goToPage(\'' + type + '\', ' + (currentPage - 1) + ')">' + (currentPage - 1) + '</button>'; }
+            if (currentPage > 1 && currentPage < totalPages) { html += '<button class="pagination-btn active">' + currentPage + '</button>'; }
+            if (currentPage < totalPages) { html += '<button class="pagination-btn" onclick="goToPage(\'' + type + '\', ' + (currentPage + 1) + ')">' + (currentPage + 1) + '</button>'; }
+            html += '<button class="pagination-btn ' + (currentPage === totalPages ? 'active' : '') + '" onclick="goToPage(\'' + type + '\', ' + totalPages + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '>Последняя</button>';
+            html += '<span class="pagination-info">Страница ' + currentPage + ' из ' + totalPages + ' (' + totalItems + ' записей)</span>';
+            container.innerHTML = html;
+        }
+
+        function goToPage(type, page) {
+            const state = paginationState[type];
+            const totalPages = Math.ceil(state.data.length / ITEMS_PER_PAGE);
+            if (page < 1 || page > totalPages) return;
+            state.currentPage = page;
+
+            if (type === 'transformers') renderTransformersTable(state.data);
+            if (type === 'lines') renderLinesTable(state.data);
+            if (type === 'consumers') renderConsumersTable(state.data);
+            if (type === 'organizations') renderOrganizationsTable(state.data);
+            if (type === 'users') renderUsersTable(state.data);
+
+            renderPagination(type, state.data.length);
+        }
+
+        // ==========================================
+        // FOLDERS / REGISTRY (ЛОКАЛЬНАЯ ПАМЯТЬ + АВТОГЕНЕРАЦИЯ БАЗЫ РБ)
+        // ==========================================
+        let allFolders = [];
+
+        // Полная база всех областей и городов
+        const defaultRegistry = [
+            {id: 1, name: "Брестская область", parent_id: null},
+            {id: 2, name: "г. Брест", parent_id: 1},
+            {id: 3, name: "Витебская область", parent_id: null},
+            {id: 4, name: "г. Витебск", parent_id: 3},
+            {id: 5, name: "Гомельская область", parent_id: null},
+            {id: 6, name: "г. Гомель", parent_id: 5},
+            {id: 7, name: "Железнодорожный район", parent_id: 6},
+            {id: 8, name: "Новобелицкий район", parent_id: 6},
+            {id: 9, name: "Советский район", parent_id: 6},
+            {id: 10, name: "ул. Барыкина", parent_id: 9},
+            {id: 11, name: "ул. Речицкое шоссе", parent_id: 9},
+            {id: 12, name: "Центральный район", parent_id: 6},
+            {id: 13, name: "г. Мозырь", parent_id: 5},
+            {id: 14, name: "ул. Ленина", parent_id: 13},
+            {id: 15, name: "г. Жлобин", parent_id: 5},
+            {id: 16, name: "ул. Первомайская", parent_id: 15},
+            {id: 17, name: "г. Речица", parent_id: 5},
+            {id: 18, name: "ул. Советская", parent_id: 17},
+            {id: 19, name: "г. Светлогорск", parent_id: 5},
+            {id: 20, name: "ул. Калинина", parent_id: 19},
+            {id: 21, name: "г. Калинковичи", parent_id: 5},
+            {id: 22, name: "ул. Князева", parent_id: 21},
+            {id: 23, name: "г. Рогачев", parent_id: 5},
+            {id: 24, name: "ул. Кирова", parent_id: 23},
+            {id: 25, name: "г. Добруш", parent_id: 5},
+            {id: 26, name: "ул. Ф. Энгельса", parent_id: 25},
+            {id: 27, name: "г. Хойники", parent_id: 5},
+            {id: 28, name: "ул. Колесника", parent_id: 27},
+            {id: 29, name: "Гродненская область", parent_id: null},
+            {id: 30, name: "г. Гродно", parent_id: 29},
+            {id: 31, name: "Минская область", parent_id: null},
+            {id: 32, name: "г. Минск", parent_id: 31},
+            {id: 33, name: "Могилевская область", parent_id: null},
+            {id: 34, name: "г. Могилев", parent_id: 33}
+        ];
+
+        function getLocalRegistry() {
+            const stored = localStorage.getItem('voltstream_registry_folders');
+            let folders = stored ? JSON.parse(stored) : [];
+
+            // Проверяем, есть ли уже Гомельская область
+            const hasGomel = folders.some(f => f.name === "Гомельская область");
+
+            // Если нет (первый запуск или удалили), добавляем дефолтную базу
+            if (!hasGomel) {
+                const maxId = folders.length > 0 ? Math.max(...folders.map(f => f.id)) : 0;
+                // Смещаем ID, чтобы не перетереть возможные другие папки
+                const newDefaults = defaultRegistry.map(d => ({
+                    id: d.id + maxId,
+                    name: d.name,
+                    parent_id: d.parent_id ? d.parent_id + maxId : null
+                }));
+                folders = [...folders, ...newDefaults];
+                saveLocalRegistry(folders);
+            }
+
+            return folders;
+        }
+
+        function saveLocalRegistry(folders) {
+            localStorage.setItem('voltstream_registry_folders', JSON.stringify(folders));
+        }
+
+        function loadRegistry() {
+            // Пытаемся обратиться к серверу. Если он выдает 404 (нет URL), срабатывает catch
+            fetch('/api/registry/')
+                .then(res => {
+                    if(!res.ok) throw new Error("API не готово");
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'success' && data.folders && data.folders.length > 0) {
+                        allFolders = data.folders;
+                        renderRegistryTree(data.folders, data.schemes || []);
+                        populateParentFolderSelect(data.folders);
+                    } else {
+                        throw new Error("База пуста");
+                    }
+                })
+                .catch(err => {
+                    // ЕСЛИ СЕРВЕР ОТКАЗАЛ: Загружаем из локального кэша
+                    allFolders = getLocalRegistry();
+
+                    // Также пытаемся загрузить схемы из локального кэша
+                    const storedSchemes = localStorage.getItem('voltstream_saved_schemes');
+                    const localSchemes = storedSchemes ? JSON.parse(storedSchemes) : [];
+
+                    renderRegistryTree(allFolders, localSchemes);
+                    populateParentFolderSelect(allFolders);
+                });
+        }
+
+        function renderRegistryTree(folders, schemes) {
+            const container = document.getElementById('admin-registry-tree');
+            if (!folders || folders.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет созданных папок. Нажмите "Добавить папку", чтобы начать.</div>';
+                return;
+            }
+
+            const folderMap = {};
+            folders.forEach(f => folderMap[f.id] = { ...f, children: [], schemes: [] });
+
+            // Распределяем схемы по папкам
+            if (schemes) {
+                schemes.forEach(s => {
+                    if (folderMap[s.folder_id]) {
+                        folderMap[s.folder_id].schemes.push(s);
+                    }
+                });
+            }
+
+            const rootFolders = [];
+            folders.forEach(f => {
+                if (f.parent_id && folderMap[f.parent_id]) {
+                    folderMap[f.parent_id].children.push(folderMap[f.id]);
+                } else {
+                    rootFolders.push(folderMap[f.id]);
+                }
+            });
+
+            function generateHTML(node) {
+                // Если это главные папки Гомельской области, оставляем их открытыми
+                const isOpen = (node.name === "Гомельская область" || node.name === "г. Гомель" || node.name === "Советский район") ? 'open' : '';
+
+                const orgBadge = node.org_id
+                    ? `<span style="font-size:10px; color: var(--accent); margin-left:6px;" title="Организация ID ${node.org_id}">🏢</span>`
+                    : `<span style="font-size:10px; color: var(--text-secondary); margin-left:6px;" title="Общая папка — видна всем">🌐</span>`;
+
+                let html = `<details class="tree-details-admin" ${isOpen}>
+                                <summary class="tree-summary-admin">
+                                    <div class="tree-node-content">📁 ${node.name}${orgBadge}</div>
+                                    <div class="action-cell">
+                                        <button class="btn btn-sm btn-primary btn-icon" onclick="event.preventDefault(); event.stopPropagation(); openFolderModal(${node.id});" title="Добавить дочернюю папку">➕</button>
+                                        <button class="btn btn-sm btn-secondary btn-icon" onclick="event.preventDefault(); event.stopPropagation(); editFolder(${node.id}, '${node.name.replace(/'/g, "\\'")}', ${node.parent_id || 'null'}, ${node.org_id || 'null'});" title="Редактировать">✏️</button>
+                                        <button class="btn btn-sm btn-danger btn-icon" onclick="event.preventDefault(); event.stopPropagation(); deleteFolder(${node.id});" title="Удалить">🗑️</button>
+                                    </div>
+                                </summary>`;
+
+                // Выводим дочерние папки
+                if (node.children && node.children.length > 0) {
+                    node.children.forEach(child => {
+                        html += generateHTML(child);
+                    });
+                }
+
+                // Выводим схемы внутри папки
+                if (node.schemes && node.schemes.length > 0) {
+                    node.schemes.forEach(scheme => {
+                        html += `<div class="tree-file-admin">
+                                    <span>📄 ${scheme.name}</span>
+                                    <button class="btn btn-sm btn-danger btn-icon" onclick="event.preventDefault(); deleteScheme(${scheme.id});" title="Удалить схему">🗑️</button>
+                                 </div>`;
+                    });
+                }
+
+                if ((!node.children || node.children.length === 0) && (!node.schemes || node.schemes.length === 0)) {
+                    html += `<div style="margin-left:20px; font-size:11px; color:var(--text-secondary); font-style:italic;">Пустая папка</div>`;
+                }
+                html += `</details>`;
+                return html;
+            }
+
+            let finalHTML = '';
+            rootFolders.forEach(root => { finalHTML += generateHTML(root); });
+            container.innerHTML = finalHTML;
+        }
+
+        function populateParentFolderSelect(folders) {
+            const select = document.getElementById('folder-parent');
+            let optionsHTML = '<option value="">-- Корень (Без родителя) --</option>';
+            folders.forEach(f => {
+                optionsHTML += `<option value="${f.id}">${f.name}</option>`;
+            });
+            select.innerHTML = optionsHTML;
+        }
+
+        function openFolderModal(parentId) {
+            document.getElementById('folder-modal-title').textContent = parentId ? 'Добавить дочернюю папку' : 'Добавить папку';
+            document.getElementById('folder-id').value = '';
+            document.getElementById('folder-name').value = '';
+            document.getElementById('folder-parent').value = parentId ? String(parentId) : '';
+            const orgSel = document.getElementById('folder-org');
+            if (orgSel) {
+                if (parentId) {
+                    const parentFolder = (allFolders || []).find(f => f.id === parentId);
+                    if (parentFolder) {
+                        orgSel.value = parentFolder.org_id ? String(parentFolder.org_id) : '';
+                    }
+                } else {
+                    if (orgSel.options.length > 0) orgSel.value = orgSel.options[0].value;
+                }
+            }
+            document.getElementById('folder-modal').classList.add('active');
+        }
+
+        function editFolder(id, name, parentId, orgId) {
+            document.getElementById('folder-modal-title').textContent = 'Редактировать папку';
+            document.getElementById('folder-id').value = id;
+            document.getElementById('folder-name').value = name;
+            document.getElementById('folder-parent').value = parentId !== null ? parentId : '';
+            const orgSel = document.getElementById('folder-org');
+            if (orgSel) orgSel.value = orgId ? String(orgId) : '';
+            document.getElementById('folder-modal').classList.add('active');
+        }
+
+        function closeFolderModal() {
+            document.getElementById('folder-modal').classList.remove('active');
+        }
+
+        function saveFolder() {
+            const id = document.getElementById('folder-id').value;
+            const name = document.getElementById('folder-name').value;
+            const parentId = document.getElementById('folder-parent').value ? parseInt(document.getElementById('folder-parent').value) : null;
+            const orgSelEl = document.getElementById('folder-org');
+            const orgValue = orgSelEl ? orgSelEl.value : '';
+            const organizationId = orgValue === '' ? null : parseInt(orgValue, 10);
+
+            if (!name) {
+                showNotification('Название папки обязательно', 'error');
+                return;
+            }
+
+            const url = id ? `/api/admin/folders/${id}/` : '/api/admin/folders/create/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, parent_id: parentId, organization_id: organizationId })
+            })
+            .then(res => {
+                if(!res.ok) throw new Error("API не готово");
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(id ? 'Папка обновлена' : 'Папка успешно создана', 'success');
+                    closeFolderModal();
+                    loadRegistry();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => {
+                // СОХРАНЕНИЕ В ЛОКАЛЬНЫЙ КЭШ ПРИ ОТСУТСТВИИ БЭКЕНДА
+                let folders = getLocalRegistry();
+                if (id) {
+                    const idx = folders.findIndex(f => f.id == id);
+                    if (idx !== -1) {
+                        folders[idx].name = name;
+                        folders[idx].parent_id = parentId;
+                    }
+                } else {
+                    const newId = folders.length > 0 ? Math.max(...folders.map(f => f.id)) + 1 : 1;
+                    folders.push({ id: newId, name: name, parent_id: parentId });
+                }
+                saveLocalRegistry(folders);
+                showNotification(id ? 'Папка обновлена' : 'Папка создана', 'success');
+                closeFolderModal();
+                loadRegistry();
+            });
+        }
+
+        function deleteFolder(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту папку? Все вложенные элементы также могут быть удалены!')) return;
+
+            fetch(`/api/admin/folders/${id}/delete/`, { method: 'DELETE' })
+                .then(res => {
+                    if(!res.ok) throw new Error("API не готово");
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Папка удалена', 'success');
+                        loadRegistry();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    // УДАЛЕНИЕ ИЗ ЛОКАЛЬНОГО КЭША ПРИ ОТСУТСТВИИ БЭКЕНДА
+                    let folders = getLocalRegistry();
+
+                    // Находим все дочерние элементы, чтобы удалить ветку целиком
+                    function getChildrenIds(parentId) {
+                        let ids = [];
+                        let children = folders.filter(f => f.parent_id == parentId);
+                        children.forEach(c => {
+                            ids.push(c.id);
+                            ids = ids.concat(getChildrenIds(c.id));
+                        });
+                        return ids;
+                    }
+
+                    const idsToDelete = [id, ...getChildrenIds(id)];
+                    folders = folders.filter(f => !idsToDelete.includes(f.id));
+
+                    saveLocalRegistry(folders);
+
+                    // Также удаляем схемы, которые были в этих папках
+                    const storedSchemes = localStorage.getItem('voltstream_saved_schemes');
+                    if (storedSchemes) {
+                        let schemes = JSON.parse(storedSchemes);
+                        schemes = schemes.filter(s => !idsToDelete.includes(s.folder_id));
+                        localStorage.setItem('voltstream_saved_schemes', JSON.stringify(schemes));
+                    }
+
+                    showNotification('Папка удалена', 'success');
+                    loadRegistry();
+                });
+        }
+
+        function deleteScheme(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту схему? Данное действие нельзя отменить!')) return;
+
+            // Пытаемся удалить через API (если есть)
+            fetch(`/api/admin/schemes/${id}/delete/`, { method: 'DELETE' })
+                .then(res => {
+                    if(!res.ok) throw new Error("API не готово");
+                    return res.json();
+                })
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Схема удалена', 'success');
+                        loadRegistry();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => {
+                    // УДАЛЕНИЕ ИЗ ЛОКАЛЬНОГО КЭША ПРИ ОТСУТСТВИИ БЭКЕНДА
+                    const storedSchemes = localStorage.getItem('voltstream_saved_schemes');
+                    if (storedSchemes) {
+                        let schemes = JSON.parse(storedSchemes);
+                        schemes = schemes.filter(s => s.id !== id);
+                        localStorage.setItem('voltstream_saved_schemes', JSON.stringify(schemes));
+                        showNotification('Схема удалена', 'success');
+                        loadRegistry();
+                    }
+                });
+        }
+
+
+        // ==========================================
+        // ДРУГИЕ СПРАВОЧНИКИ (ТРАНСФОРМАТОРЫ И Т.Д.)
+        // ==========================================
+        function loadTransformers() {
+            fetch('/api/admin/transformers/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        allTransformers = data.data;
+                        paginationState.transformers.data = data.data;
+                        paginationState.transformers.currentPage = 1;
+                        renderTransformersTable(allTransformers);
+                        renderPagination('transformers', allTransformers.length);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('transformers-table-body').innerHTML =
+                        '<tr><td colspan="11" class="empty-state" style="color: var(--danger);">Ошибка загрузки данных</td></tr>';
+                });
+        }
+
+        function renderTransformersTable(data) {
+            const tbody = document.getElementById('transformers-table-body');
+            const state = paginationState.transformers;
+            const currentPage = state.currentPage;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" class="empty-state">Нет данных</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pageData.map(t => `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${t.type_name || '—'}</td>
+                    <td>${t.nominal_power || '—'}</td>
+                    <td>${t.losses_no_load || '—'}</td>
+                    <td>${t.losses_short_circuit || '—'}</td>
+                    <td>${t.voltage_hv || '—'}</td>
+                    <td>${t.voltage_lv || '—'}</td>
+                    <td>${t.voltage_short_circuit_pct || '—'}</td>
+                    <td>${t.pbv_stages_count || '—'}</td>
+                    <td>${t.pbv_step_pct || '—'}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="editTransformer(${t.id})" title="Редактировать">✏️</button>
+                        {% if is_super %}
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteTransformer(${t.id})" title="Удалить">🗑️</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchTransformers() {
+            const query = document.getElementById('transformer-search').value.toLowerCase();
+            const filtered = allTransformers.filter(t =>
+                (t.type_name || '').toLowerCase().includes(query)
+            );
+            paginationState.transformers.data = filtered;
+            paginationState.transformers.currentPage = 1;
+            renderTransformersTable(filtered);
+            renderPagination('transformers', filtered.length);
+        }
+
+        function openTransformerModal() {
+            document.getElementById('transformer-modal-title').textContent = 'Добавить трансформатор';
+            document.getElementById('transformer-id').value = '';
+            document.getElementById('transformer-type_name').value = '';
+            document.getElementById('transformer-nominal_power').value = '';
+            document.getElementById('transformer-losses_no_load').value = '';
+            document.getElementById('transformer-losses_short_circuit').value = '';
+            document.getElementById('transformer-voltage_hv').value = '';
+            document.getElementById('transformer-voltage_lv').value = '';
+            document.getElementById('transformer-voltage_short_circuit_pct').value = '';
+            document.getElementById('transformer-pbv_stages_count').value = '';
+            document.getElementById('transformer-pbv_step_pct').value = '';
+            document.getElementById('transformer-modal').classList.add('active');
+        }
+
+        function closeTransformerModal() {
+            document.getElementById('transformer-modal').classList.remove('active');
+        }
+
+        function editTransformer(id) {
+            const t = allTransformers.find(x => x.id === id);
+            if (!t) return;
+            document.getElementById('transformer-modal-title').textContent = 'Редактировать трансформатор';
+            document.getElementById('transformer-id').value = t.id;
+            document.getElementById('transformer-type_name').value = t.type_name || '';
+            document.getElementById('transformer-nominal_power').value = t.nominal_power || '';
+            document.getElementById('transformer-losses_no_load').value = t.losses_no_load || '';
+            document.getElementById('transformer-losses_short_circuit').value = t.losses_short_circuit || '';
+            document.getElementById('transformer-voltage_hv').value = t.voltage_hv || '';
+            document.getElementById('transformer-voltage_lv').value = t.voltage_lv || '';
+            document.getElementById('transformer-voltage_short_circuit_pct').value = t.voltage_short_circuit_pct || '';
+            document.getElementById('transformer-pbv_stages_count').value = t.pbv_stages_count || '';
+            document.getElementById('transformer-pbv_step_pct').value = t.pbv_step_pct || '';
+            document.getElementById('transformer-modal').classList.add('active');
+        }
+
+        function saveTransformer() {
+            const id = document.getElementById('transformer-id').value;
+            const data = {
+                type_name: document.getElementById('transformer-type_name').value,
+                nominal_power: document.getElementById('transformer-nominal_power').value,
+                losses_no_load: document.getElementById('transformer-losses_no_load').value,
+                losses_short_circuit: document.getElementById('transformer-losses_short_circuit').value,
+                voltage_hv: document.getElementById('transformer-voltage_hv').value,
+                voltage_lv: document.getElementById('transformer-voltage_lv').value,
+                voltage_short_circuit_pct: document.getElementById('transformer-voltage_short_circuit_pct').value,
+                pbv_stages_count: document.getElementById('transformer-pbv_stages_count').value,
+                pbv_step_pct: document.getElementById('transformer-pbv_step_pct').value,
+            };
+
+            const url = id ? `/api/admin/transformers/${id}/` : '/api/admin/transformers/create/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Трансформатор сохранён', 'success');
+                    closeTransformerModal();
+                    loadTransformers();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function deleteTransformer(id) {
+            if (!confirm('Вы уверены, что хотите удалить этот трансформатор?')) return;
+            fetch(`/api/admin/transformers/${id}/delete/`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Трансформатор удалён', 'success');
+                        loadTransformers();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+
+        function loadLines() {
+            fetch('/api/admin/lines/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        allLines = data.data;
+                        paginationState.lines.data = data.data;
+                        paginationState.lines.currentPage = 1;
+                        renderLinesTable(allLines);
+                        renderPagination('lines', allLines.length);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('lines-table-body').innerHTML =
+                        '<tr><td colspan="10" class="empty-state" style="color: var(--danger);">Ошибка загрузки данных</td></tr>';
+                });
+        }
+
+        function renderLinesTable(data) {
+            const tbody = document.getElementById('lines-table-body');
+            const state = paginationState.lines;
+            const currentPage = state.currentPage;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Нет данных</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pageData.map(l => `
+                <tr>
+                    <td>${l.id}</td>
+                    <td>${l.mark || '—'}</td>
+                    <td>${l.material || '—'}</td>
+                    <td>${l.insulation || '—'}</td>
+                    <td>${l.cores_count || '—'}</td>
+                    <td>${l.cross_section || '—'}</td>
+                    <td>${l.r_phase_ohm_km || '—'}</td>
+                    <td>${l.r_null_ohm_km || '—'}</td>
+                    <td>${l.r_add_ohm_km || '—'}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="editLine(${l.id})" title="Редактировать">✏️</button>
+                        {% if is_super %}
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteLine(${l.id})" title="Удалить">🗑️</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchLines() {
+            const query = document.getElementById('line-search').value.toLowerCase();
+            const filtered = allLines.filter(l =>
+                (l.mark || '').toLowerCase().includes(query)
+            );
+            paginationState.lines.data = filtered;
+            paginationState.lines.currentPage = 1;
+            renderLinesTable(filtered);
+            renderPagination('lines', filtered.length);
+        }
+
+        function openLineModal() {
+            document.getElementById('line-modal-title').textContent = 'Добавить ЛЭП';
+            document.getElementById('line-id').value = '';
+            document.getElementById('line-mark').value = '';
+            document.getElementById('line-material').value = '';
+            document.getElementById('line-insulation').value = '';
+            document.getElementById('line-cores_count').value = '';
+            document.getElementById('line-cross_section').value = '';
+            document.getElementById('line-r_phase_ohm_km').value = '';
+            document.getElementById('line-r_null_ohm_km').value = '';
+            document.getElementById('line-r_add_ohm_km').value = '';
+            document.getElementById('line-modal').classList.add('active');
+        }
+
+        function closeLineModal() {
+            document.getElementById('line-modal').classList.remove('active');
+        }
+
+        function editLine(id) {
+            const l = allLines.find(x => x.id === id);
+            if (!l) return;
+            document.getElementById('line-modal-title').textContent = 'Редактировать ЛЭП';
+            document.getElementById('line-id').value = l.id;
+            document.getElementById('line-mark').value = l.mark || '';
+            document.getElementById('line-material').value = l.material || '';
+            document.getElementById('line-insulation').value = l.insulation || '';
+            document.getElementById('line-cores_count').value = l.cores_count || '';
+            document.getElementById('line-cross_section').value = l.cross_section || '';
+            document.getElementById('line-r_phase_ohm_km').value = l.r_phase_ohm_km || '';
+            document.getElementById('line-r_null_ohm_km').value = l.r_null_ohm_km || '';
+            document.getElementById('line-r_add_ohm_km').value = l.r_add_ohm_km || '';
+            document.getElementById('line-modal').classList.add('active');
+        }
+
+        function saveLine() {
+            const id = document.getElementById('line-id').value;
+            const data = {
+                mark: document.getElementById('line-mark').value,
+                material: document.getElementById('line-material').value,
+                insulation: document.getElementById('line-insulation').value,
+                cores_count: document.getElementById('line-cores_count').value,
+                cross_section: document.getElementById('line-cross_section').value,
+                r_phase_ohm_km: document.getElementById('line-r_phase_ohm_km').value,
+                r_null_ohm_km: document.getElementById('line-r_null_ohm_km').value,
+                r_add_ohm_km: document.getElementById('line-r_add_ohm_km').value,
+            };
+
+            const url = id ? `/api/admin/lines/${id}/` : '/api/admin/lines/create/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('ЛЭП сохранена', 'success');
+                    closeLineModal();
+                    loadLines();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function deleteLine(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту ЛЭП?')) return;
+            fetch(`/api/admin/lines/${id}/delete/`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('ЛЭП удалена', 'success');
+                        loadLines();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function loadConsumers() {
+            fetch('/api/admin/consumers/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        allConsumers = data.data;
+                        paginationState.consumers.data = data.data;
+                        paginationState.consumers.currentPage = 1;
+                        renderConsumersTable(allConsumers);
+                        renderPagination('consumers', allConsumers.length);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('consumers-table-body').innerHTML =
+                        '<tr><td colspan="10" class="empty-state" style="color: var(--danger);">Ошибка загрузки данных</td></tr>';
+                });
+        }
+
+        function renderConsumersTable(data) {
+            const tbody = document.getElementById('consumers-table-body');
+            const state = paginationState.consumers;
+            const currentPage = state.currentPage;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" class="empty-state">Нет данных</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pageData.map(c => `
+                <tr>
+                    <td>${c.id}</td>
+                    <td>${c.name || '—'}</td>
+                    <td>${c.usage_character || '—'}</td>
+                    <td>${c.address || '—'}</td>
+                    <td>${c.supply_type || '—'}</td>
+                    <td>${c.phase_number || '—'}</td>
+                    <td>${c.calculated_active_power_kw || '—'}</td>
+                    <td>${c.yearly_consumption_kwh || '—'}</td>
+                    <td>${c.cos_phi || '—'}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="editConsumer(${c.id})" title="Редактировать">✏️</button>
+                        {% if is_super %}
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteConsumer(${c.id})" title="Удалить">🗑️</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchConsumers() {
+            const query = document.getElementById('consumer-search').value.toLowerCase();
+            const filtered = allConsumers.filter(c =>
+                (c.name || '').toLowerCase().includes(query)
+            );
+            paginationState.consumers.data = filtered;
+            paginationState.consumers.currentPage = 1;
+            renderConsumersTable(filtered);
+            renderPagination('consumers', filtered.length);
+        }
+
+        function openConsumerModal() {
+            document.getElementById('consumer-modal-title').textContent = 'Добавить потребителя';
+            document.getElementById('consumer-id').value = '';
+            document.getElementById('consumer-name').value = '';
+            document.getElementById('consumer-usage_character').value = '';
+            document.getElementById('consumer-address').value = '';
+            document.getElementById('consumer-additional_data').value = '';
+            document.getElementById('consumer-supply_type').value = '';
+            document.getElementById('consumer-phase_number').value = '';
+            document.getElementById('consumer-calc_method').value = '';
+            document.getElementById('consumer-yearly_consumption_kwh').value = '';
+            document.getElementById('consumer-calculated_active_power_kw').value = '';
+            document.getElementById('consumer-cos_phi').value = '';
+            document.getElementById('consumer-modal').classList.add('active');
+        }
+
+        function closeConsumerModal() {
+            document.getElementById('consumer-modal').classList.remove('active');
+        }
+
+        function editConsumer(id) {
+            const c = allConsumers.find(x => x.id === id);
+            if (!c) return;
+            document.getElementById('consumer-modal-title').textContent = 'Редактировать потребителя';
+            document.getElementById('consumer-id').value = c.id;
+            document.getElementById('consumer-name').value = c.name || '';
+            document.getElementById('consumer-usage_character').value = c.usage_character || '';
+            document.getElementById('consumer-address').value = c.address || '';
+            document.getElementById('consumer-additional_data').value = c.additional_data || '';
+            document.getElementById('consumer-supply_type').value = c.supply_type || '';
+            document.getElementById('consumer-phase_number').value = c.phase_number || '';
+            document.getElementById('consumer-calc_method').value = c.calc_method || '';
+            document.getElementById('consumer-yearly_consumption_kwh').value = c.yearly_consumption_kwh || '';
+            document.getElementById('consumer-calculated_active_power_kw').value = c.calculated_active_power_kw || '';
+            document.getElementById('consumer-cos_phi').value = c.cos_phi || '';
+            document.getElementById('consumer-modal').classList.add('active');
+        }
+
+        function saveConsumer() {
+            const id = document.getElementById('consumer-id').value;
+            const data = {
+                name: document.getElementById('consumer-name').value,
+                usage_character: document.getElementById('consumer-usage_character').value,
+                address: document.getElementById('consumer-address').value,
+                additional_data: document.getElementById('consumer-additional_data').value,
+                supply_type: document.getElementById('consumer-supply_type').value,
+                phase_number: document.getElementById('consumer-phase_number').value,
+                calc_method: document.getElementById('consumer-calc_method').value,
+                yearly_consumption_kwh: document.getElementById('consumer-yearly_consumption_kwh').value,
+                calculated_active_power_kw: document.getElementById('consumer-calculated_active_power_kw').value,
+                cos_phi: document.getElementById('consumer-cos_phi').value,
+            };
+
+            const url = id ? `/api/admin/consumers/${id}/` : '/api/admin/consumers/create/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Потребитель сохранён', 'success');
+                    closeConsumerModal();
+                    loadConsumers();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function deleteConsumer(id) {
+            if (!confirm('Вы уверены, что хотите удалить этого потребителя?')) return;
+            fetch(`/api/admin/consumers/${id}/delete/`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Потребитель удалён', 'success');
+                        loadConsumers();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function loadOrganizations() {
+            fetch('/api/admin/organizations/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        allOrganizations = data.data;
+                        paginationState.organizations.data = data.data;
+                        paginationState.organizations.currentPage = 1;
+                        renderOrganizationsTable(allOrganizations);
+                        renderPagination('organizations', allOrganizations.length);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('organizations-table-body').innerHTML =
+                        '<tr><td colspan="6" class="empty-state" style="color: var(--danger);">Ошибка загрузки данных</td></tr>';
+                });
+        }
+
+        function renderOrganizationsTable(data) {
+            const tbody = document.getElementById('organizations-table-body');
+            const state = paginationState.organizations;
+            const currentPage = state.currentPage;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Нет данных</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pageData.map(o => `
+                <tr>
+                    <td>${o.id}</td>
+                    <td>${o.name || '—'}</td>
+                    <td>${o.address || '—'}</td>
+                    <td>${o.phone || '—'}</td>
+                    <td>${o.fax || '—'}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="editOrganization(${o.id})" title="Редактировать">✏️</button>
+                        {% if is_super %}
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteOrganization(${o.id})" title="Удалить">🗑️</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchOrganizations() {
+            const query = document.getElementById('organization-search').value.toLowerCase();
+            const filtered = allOrganizations.filter(o =>
+                (o.name || '').toLowerCase().includes(query)
+            );
+            paginationState.organizations.data = filtered;
+            paginationState.organizations.currentPage = 1;
+            renderOrganizationsTable(filtered);
+            renderPagination('organizations', filtered.length);
+        }
+
+        function openOrganizationModal() {
+            document.getElementById('organization-modal-title').textContent = 'Добавить организацию';
+            document.getElementById('organization-id').value = '';
+            document.getElementById('organization-name').value = '';
+            document.getElementById('organization-address').value = '';
+            document.getElementById('organization-phone').value = '';
+            document.getElementById('organization-fax').value = '';
+            document.getElementById('organization-modal').classList.add('active');
+        }
+
+        function closeOrganizationModal() {
+            document.getElementById('organization-modal').classList.remove('active');
+        }
+
+        function editOrganization(id) {
+            const o = allOrganizations.find(x => x.id === id);
+            if (!o) return;
+            document.getElementById('organization-modal-title').textContent = 'Редактировать организацию';
+            document.getElementById('organization-id').value = o.id;
+            document.getElementById('organization-name').value = o.name || '';
+            document.getElementById('organization-address').value = o.address || '';
+            document.getElementById('organization-phone').value = o.phone || '';
+            document.getElementById('organization-fax').value = o.fax || '';
+            document.getElementById('organization-modal').classList.add('active');
+        }
+
+        function saveOrganization() {
+            const id = document.getElementById('organization-id').value;
+            const data = {
+                name: document.getElementById('organization-name').value,
+                address: document.getElementById('organization-address').value,
+                phone: document.getElementById('organization-phone').value,
+                fax: document.getElementById('organization-fax').value,
+            };
+
+            const url = id ? `/api/admin/organizations/${id}/` : '/api/admin/create_org/';
+            const method = id ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Организация сохранена', 'success');
+                    closeOrganizationModal();
+                    loadOrganizations();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function deleteOrganization(id) {
+            if (!confirm('Вы уверены, что хотите удалить эту организацию?')) return;
+            fetch(`/api/admin/organizations/${id}/delete/`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Организация удалена', 'success');
+                        loadOrganizations();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function loadUsers() {
+            fetch('/api/admin/users/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        allUsers = data.data;
+                        paginationState.users.data = data.data;
+                        paginationState.users.currentPage = 1;
+                        renderUsersTable(allUsers);
+                        renderPagination('users', allUsers.length);
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('users-table-body').innerHTML =
+                        '<tr><td colspan="9" class="empty-state" style="color: var(--danger);">Ошибка загрузки данных</td></tr>';
+                });
+        }
+
+        function renderUsersTable(data) {
+            const tbody = document.getElementById('users-table-body');
+            const state = paginationState.users;
+            const currentPage = state.currentPage;
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, data.length);
+            const pageData = data.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-state">Нет данных</td></tr>';
+                return;
+            }
+            tbody.innerHTML = pageData.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.username || '—'}</td>
+                    <td>${u.email || '—'}</td>
+                    <td>${u.last_name || ''} ${u.first_name || ''}</td>
+                    <td>${u.patronymic || '—'}</td>
+                    <td>${u.phone || '—'}</td>
+                    <td>${u.organization || '—'}</td>
+                    <td>${u.is_superuser ? '👑 Суперюзер' : (u.is_staff ? '🔧 Админ' : '👤 Пользователь')}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="editUser(${u.id})" title="Редактировать">✏️</button>
+                        {% if is_super %}
+                        <button class="btn btn-sm btn-danger btn-icon" onclick="deleteUser(${u.id})" title="Удалить">🗑️</button>
+                        {% endif %}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function searchUsers() {
+            const query = document.getElementById('user-search').value.toLowerCase();
+            const filtered = allUsers.filter(u =>
+                (u.username || '').toLowerCase().includes(query)
+            );
+            paginationState.users.data = filtered;
+            paginationState.users.currentPage = 1;
+            renderUsersTable(filtered);
+            renderPagination('users', filtered.length);
+        }
+
+        // ==========================================
+        // PERMISSION / GROUP PICKER (для is_super)
+        // ==========================================
+        const IS_SUPER = {{ is_super|yesno:"true,false" }};
+        let permsTree = null;    // [{app_label, app_verbose, models: [{model, model_verbose, perms: []}]}]
+        let groupsCache = null;  // [{id, name}]
+        let presetsCache = {};   // {role: [perm_id]}
+
+        async function ensurePermsLoaded() {
+            if (permsTree !== null && groupsCache !== null) return;
+            try {
+                const res = await fetch('/api/admin/permissions/');
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error(data.message || 'load failed');
+                permsTree = data.permissions || [];
+                groupsCache = data.groups || [];
+                presetsCache = data.presets || {};
+            } catch (e) {
+                permsTree = permsTree || [];
+                groupsCache = groupsCache || [];
+                presetsCache = presetsCache || {};
+                showNotification('Не удалось загрузить список прав', 'error');
+            }
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => (
+                {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
+            ));
+        }
+
+        function renderPermsTree(containerId, selectedIds, namePrefix, counterId) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            const sel = new Set((selectedIds || []).map(Number));
+            if (!permsTree || !permsTree.length) {
+                box.innerHTML = '<div class="perm-picker-empty">Список пуст</div>';
+                if (counterId) document.getElementById(counterId).textContent = 'выбрано: 0';
+                return;
+            }
+            const html = permsTree.map(app => {
+                let appSelected = 0;
+                let appTotal = 0;
+                const modelsHtml = app.models.map(m => {
+                    let modelSelected = 0;
+                    const rowsHtml = m.perms.map(p => {
+                        const isChecked = sel.has(p.id);
+                        if (isChecked) { modelSelected += 1; appSelected += 1; }
+                        appTotal += 1;
+                        const search = (
+                            app.app_verbose + ' ' + m.model_verbose + ' ' + p.name + ' ' + p.codename
+                        ).toLowerCase();
+                        return `<label class="perm-row" data-search="${escapeHtml(search)}">
+                                  <input type="checkbox" name="${namePrefix}" value="${p.id}" ${isChecked ? 'checked' : ''}
+                                         onchange="onPermChange(this)">
+                                  <span>${escapeHtml(p.name)}</span>
+                                </label>`;
+                    }).join('');
+                    // По умолчанию модель свёрнута — пользователь сам раскроет нужное.
+                    return `<div class="perm-model collapsed" data-model="${escapeHtml(m.model)}" data-total="${m.perms.length}">
+                              <div class="perm-model-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                                <span class="perm-arrow">▾</span>
+                                <strong>${escapeHtml(m.model_verbose)}</strong>
+                                <span class="perm-model-counter" style="color:var(--text-secondary); font-size:0.75rem;">
+                                  <span class="perm-sel">${modelSelected}</span>/${m.perms.length}
+                                </span>
+                                <button type="button" class="perm-bulk"
+                                        onclick="event.stopPropagation(); toggleModel(this, true)">все</button>
+                                <button type="button" class="perm-bulk"
+                                        onclick="event.stopPropagation(); toggleModel(this, false)">×</button>
+                              </div>
+                              <div class="perm-model-body">${rowsHtml}</div>
+                            </div>`;
+                }).join('');
+                // По умолчанию все приложения, кроме "designer", свёрнуты.
+                const isDesigner = app.app_label === 'designer';
+                const collapsed = isDesigner ? '' : 'collapsed';
+                return `<div class="perm-app ${collapsed}" data-app="${escapeHtml(app.app_label)}" data-total="${appTotal}">
+                          <div class="perm-app-header" onclick="this.parentElement.classList.toggle('collapsed')">
+                            <span class="perm-arrow">▾</span>
+                            <span>📁 ${escapeHtml(app.app_verbose)}</span>
+                            <span class="perm-app-counter" style="color:var(--text-secondary); font-size:0.75rem; margin-left:0.5rem;">
+                              <span class="perm-sel">${appSelected}</span>/${appTotal}
+                            </span>
+                            <button type="button" class="perm-bulk"
+                                    onclick="event.stopPropagation(); toggleApp(this, true)">все</button>
+                            <button type="button" class="perm-bulk"
+                                    onclick="event.stopPropagation(); toggleApp(this, false)">×</button>
+                          </div>
+                          <div class="perm-app-body">${modelsHtml}</div>
+                        </div>`;
+            }).join('');
+            box.innerHTML = html;
+            refreshAllCounters(box);
+            updatePickerCounter(containerId, counterId);
+        }
+
+        function onPermChange(checkbox) {
+            const list = checkbox.closest('.perm-picker-list');
+            if (!list) return;
+            refreshAllCounters(list);
+            const counterId = list.id.replace('-list', '-counter');
+            updatePickerCounter(list.id, counterId);
+        }
+
+        function refreshAllCounters(scope) {
+            scope.querySelectorAll('.perm-model').forEach(m => {
+                const total = parseInt(m.dataset.total || '0', 10);
+                const sel = m.querySelectorAll('input[type="checkbox"]:checked').length;
+                const out = m.querySelector('.perm-model-counter .perm-sel');
+                if (out) out.textContent = sel;
+                m.dataset.selected = sel;
+                m.classList.toggle('perm-fully', total > 0 && sel === total);
+                m.classList.toggle('perm-partial', sel > 0 && sel < total);
+            });
+            scope.querySelectorAll('.perm-app').forEach(a => {
+                const total = parseInt(a.dataset.total || '0', 10);
+                const sel = a.querySelectorAll('input[type="checkbox"]:checked').length;
+                const out = a.querySelector('.perm-app-counter .perm-sel');
+                if (out) out.textContent = sel;
+                a.classList.toggle('perm-fully', total > 0 && sel === total);
+                a.classList.toggle('perm-partial', sel > 0 && sel < total);
+            });
+        }
+
+        function renderGroupsList(containerId, selectedIds, namePrefix, counterId) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            const sel = new Set((selectedIds || []).map(Number));
+            if (!groupsCache || !groupsCache.length) {
+                box.innerHTML = '<div class="perm-picker-empty">Группы не созданы</div>';
+                if (counterId) document.getElementById(counterId).textContent = 'выбрано: 0';
+                return;
+            }
+            box.innerHTML = groupsCache.map(g => {
+                const checked = sel.has(g.id) ? 'checked' : '';
+                return `<label class="perm-row" data-search="${escapeHtml(g.name.toLowerCase())}">
+                          <input type="checkbox" name="${namePrefix}" value="${g.id}" ${checked}
+                                 onchange="updatePickerCounter('${containerId}','${counterId || ''}')">
+                          <span>${escapeHtml(g.name)}</span>
+                        </label>`;
+            }).join('');
+            updatePickerCounter(containerId, counterId);
+        }
+
+        function updatePickerCounter(containerId, counterId) {
+            if (!counterId) return;
+            const box = document.getElementById(containerId);
+            const counter = document.getElementById(counterId);
+            if (!box || !counter) return;
+            const n = box.querySelectorAll('input[type="checkbox"]:checked').length;
+            counter.textContent = 'выбрано: ' + n;
+        }
+
+        function readPickerIds(containerId) {
+            const box = document.getElementById(containerId);
+            if (!box) return [];
+            return Array.from(box.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(el => parseInt(el.value, 10));
+        }
+
+        function filterPicker(containerId, query) {
+            const q = (query || '').trim().toLowerCase();
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            // Дерево (есть .perm-app)
+            const apps = box.querySelectorAll('.perm-app');
+            if (apps.length) {
+                apps.forEach(app => {
+                    let appHasMatch = false;
+                    app.querySelectorAll('.perm-model').forEach(model => {
+                        let modelHasMatch = false;
+                        model.querySelectorAll('.perm-row').forEach(row => {
+                            const ok = !q || (row.dataset.search || '').includes(q);
+                            row.hidden = !ok;
+                            if (ok) modelHasMatch = true;
+                        });
+                        model.hidden = !modelHasMatch;
+                        if (modelHasMatch) {
+                            appHasMatch = true;
+                            // при поиске раскрываем
+                            if (q) model.classList.remove('collapsed');
+                        }
+                    });
+                    app.hidden = !appHasMatch;
+                    if (appHasMatch && q) app.classList.remove('collapsed');
+                });
+                return;
+            }
+            // Плоский список (группы)
+            box.querySelectorAll('.perm-row').forEach(row => {
+                const ok = !q || (row.dataset.search || '').includes(q);
+                row.hidden = !ok;
+            });
+        }
+
+        function toggleAllPicker(containerId, value) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            box.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = !!value; });
+            refreshAllCounters(box);
+            updatePickerCounter(containerId, containerId.replace('-list', '-counter'));
+        }
+
+        function toggleApp(btn, value) {
+            const app = btn.closest('.perm-app');
+            app.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = !!value; });
+            const list = app.closest('.perm-picker-list');
+            if (list) {
+                refreshAllCounters(list);
+                updatePickerCounter(list.id, list.id.replace('-list', '-counter'));
+            }
+        }
+
+        function toggleModel(btn, value) {
+            const model = btn.closest('.perm-model');
+            model.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = !!value; });
+            const list = model.closest('.perm-picker-list');
+            if (list) {
+                refreshAllCounters(list);
+                updatePickerCounter(list.id, list.id.replace('-list', '-counter'));
+            }
+        }
+
+        function applyPresetByIds(containerId, ids) {
+            const box = document.getElementById(containerId);
+            if (!box) return;
+            const set = new Set((ids || []).map(Number));
+            box.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                cb.checked = set.has(parseInt(cb.value, 10));
+            });
+            refreshAllCounters(box);
+            updatePickerCounter(containerId, containerId.replace('-list', '-counter'));
+        }
+
+        function applyRolePreset(containerId, role) {
+            const ids = presetsCache[role] || [];
+            applyPresetByIds(containerId, ids);
+        }
+
+        function applyRolePresetForEdit(role) {
+            // если роль не передана — берём суперюзера.
+            applyRolePreset('edit-perms-list', role || 'superuser');
+        }
+
+        async function initCreatePickers() {
+            if (!IS_SUPER) return;
+            await ensurePermsLoaded();
+            renderGroupsList('create-groups-list', [], 'create_group', 'create-groups-counter');
+            const roleSel = document.querySelector('#create-user-form [name=role]');
+            const currentRole = roleSel ? roleSel.value : 'engineer';
+            const initialIds = presetsCache[currentRole] || [];
+            renderPermsTree('create-perms-list', initialIds, 'create_perm', 'create-perms-counter');
+        }
+
+        async function initEditPickers(user) {
+            if (!IS_SUPER) return;
+            await ensurePermsLoaded();
+            renderGroupsList('edit-groups-list', user.group_ids || [], 'edit_group', 'edit-groups-counter');
+            renderPermsTree('edit-perms-list', user.permission_ids || [], 'edit_perm', 'edit-perms-counter');
+        }
+
+        // Подвешиваем авто-применение пресета при смене роли в форме создания.
+        document.addEventListener('DOMContentLoaded', function() {
+            const roleSel = document.querySelector('#create-user-form [name=role]');
+            if (roleSel && IS_SUPER) {
+                roleSel.addEventListener('change', function() {
+                    applyRolePreset('create-perms-list', this.value);
+                });
+            }
+        });
+
+        function openUserModal() {
+            document.getElementById('user-modal').classList.add('active');
+        }
+
+        function closeUserModal() {
+            document.getElementById('user-modal').classList.remove('active');
+        }
+
+        function editUser(id) {
+            const u = allUsers.find(x => x.id === id);
+            if (!u) return;
+            document.getElementById('user-modal-title').textContent = 'Редактировать пользователя';
+            document.getElementById('user-id').value = u.id;
+            document.getElementById('user-username').value = u.username || '';
+            document.getElementById('user-email').value = u.email || '';
+            document.getElementById('user-last_name').value = u.last_name || '';
+            document.getElementById('user-first_name').value = u.first_name || '';
+            document.getElementById('user-patronymic').value = u.patronymic || '';
+            document.getElementById('user-phone').value = u.phone || '';
+            document.getElementById('user-organization').value = u.organization || '';
+            if (IS_SUPER) {
+                document.getElementById('user-is_staff').value = u.is_staff ? 'true' : 'false';
+                document.getElementById('user-is_superuser').value = u.is_superuser ? 'true' : 'false';
+                document.getElementById('user-is_active').value = u.is_active === false ? 'false' : 'true';
+                document.getElementById('user-password').value = '';
+                initEditPickers(u);
+            }
+            document.getElementById('user-modal').classList.add('active');
+        }
+
+        function saveUser() {
+            const id = document.getElementById('user-id').value;
+            const data = {
+                username: document.getElementById('user-username').value,
+                email: document.getElementById('user-email').value,
+                last_name: document.getElementById('user-last_name').value,
+                first_name: document.getElementById('user-first_name').value,
+                patronymic: document.getElementById('user-patronymic').value,
+                phone: document.getElementById('user-phone').value,
+            };
+
+            if (IS_SUPER) {
+                data.is_staff = document.getElementById('user-is_staff').value === 'true';
+                data.is_superuser = document.getElementById('user-is_superuser').value === 'true';
+                data.is_active = document.getElementById('user-is_active').value === 'true';
+                const pwd = document.getElementById('user-password').value;
+                if (pwd) data.password = pwd;
+                data.group_ids = readPickerIds('edit-groups-list');
+                data.permission_ids = readPickerIds('edit-perms-list');
+            }
+
+            fetch(`/api/admin/users/${id}/`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification('Пользователь сохранён', 'success');
+                    closeUserModal();
+                    loadUsers();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function deleteUser(id) {
+            if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) return;
+            fetch(`/api/admin/users/${id}/delete/`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Пользователь удалён', 'success');
+                        loadUsers();
+                    } else {
+                        showNotification('Ошибка: ' + data.message, 'error');
+                    }
+                })
+                .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function handleCreateOrg(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = {
+                name: form.name.value,
+                region: form.region.value,
+                phone: form.phone.value,
+                fax: form.fax.value,
+            };
+
+            fetch('/api/admin/create_org/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    form.reset();
+                    loadOrganizations();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+
+        function handleCreateUser(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = {
+                login: form.login.value,
+                email: form.email.value,
+                password: form.password.value,
+                phone: form.phone.value,
+                first_name: form.first_name.value,
+                last_name: form.last_name.value,
+                patronymic: form.patronymic.value,
+                organization_id: form.organization_id.value,
+                role: form.role.value,
+            };
+
+            if (IS_SUPER) {
+                data.is_superuser = form.role.value === 'superuser';
+                data.is_staff = data.is_superuser || form.role.value === 'admin';
+                data.group_ids = readPickerIds('create-groups-list');
+                data.permission_ids = readPickerIds('create-perms-list');
+            }
+
+            fetch('/api/admin/create_user/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showNotification(data.message, 'success');
+                    form.reset();
+                    if (IS_SUPER) initCreatePickers();
+                    loadUsers();
+                } else {
+                    showNotification('Ошибка: ' + data.message, 'error');
+                }
+            })
+            .catch(err => showNotification('Ошибка сети', 'error'));
+        }
+    </script>
+</body>
+</html>

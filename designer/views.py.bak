@@ -1,0 +1,1147 @@
+import json
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+from .models import SchemeRevision, Scheme, Folder, Organization, Role, RefTransformer, RefConsumerType, RefLine, \
+    UserProfile
+from django.shortcuts import redirect
+from django.http import HttpResponseForbidden
+from django.contrib.auth import logout
+
+
+def admin_panel_view(request):
+    # 1. Проверка авторизации
+    if not request.user.is_authenticated:
+        return redirect('/admin/login/?next=/admin-panel/')
+    is_super = request.user.is_superuser
+    is_admin = request.user.is_staff
+
+    # 2. Если это обычный инженер или гость — выгоняем
+    if not (is_super or is_admin):
+        return HttpResponseForbidden(
+            "<div style='font-family: sans-serif; text-align: center; margin-top: 50px;' >"
+            "<h1 style='color: #ff5252;' >Доступ запрещен ⛔ </h1 >"
+            "<p >Эта страница доступна только администраторам. </p >"
+            "<a href='/' style='color: #2563eb; text-decoration: none; font-weight: bold;' >← Вернуться в редактор </a >"
+            "</div >"
+        )
+
+    # 3. Разделение данных: Суперюзер видит всё, локальный админ — только свою организацию
+    if is_super:
+        organizations = Organization.objects.all()
+    else:
+        # Пытаемся получить организацию текущего админа
+        user_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+        if user_org:
+            organizations = Organization.objects.filter(id=user_org.id)
+        else:
+            organizations = Organization.objects.none()
+
+    # Передаем флаг is_super в шаблон, чтобы скрыть лишние вкладки
+    return render(request, 'designer/admin_panel.html', {
+        'organizations': organizations,
+        'is_super': is_super
+    })
+
+
+def editor_view(request):
+    organizations = Organization.objects.prefetch_related('folders__schemes__revisions').all()
+    return render(request, 'designer/index.html', {'organizations': organizations})
+
+
+@csrf_exempt
+def save_scheme_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            org, _ = Organization.objects.get_or_create(name="Главная организация")
+            user, _ = User.objects.get_or_create(username="admin",
+                                                 defaults={'email': 'admin@voltstream.by', 'is_superuser': True,
+                                                           'is_staff': True})
+            folder, _ = Folder.objects.get_or_create(name="Рабочие схемы", org=org)
+            scheme, _ = Scheme.objects.get_or_create(name="Схема сети 0.4кВ", folder=folder)
+            revision = SchemeRevision.objects.create(
+                scheme=scheme, label=f"Версия от {timezone.now().strftime('%d.%m.%Y %H:%M')}",
+                topology_data=data, created_by=user
+            )
+            return JsonResponse({"status": "success", "id": revision.id})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+    return JsonResponse({"status": "error", "message": "Only POST allowed"}, status=405)
+
+
+def list_revisions_api(request):
+    revisions = SchemeRevision.objects.all().order_by('-created_at').values('id', 'label', 'created_at')
+    return JsonResponse({"status": "success", "revisions": list(revisions)})
+
+
+def load_scheme_api(request, rev_id):
+    revision = get_object_or_404(SchemeRevision, id=rev_id)
+    return JsonResponse({"status": "success", "topology_data": revision.topology_data, "label": revision.label})
+
+
+def get_catalog_nodes(request):
+    category = request.GET.get('category')
+    page_num = int(request.GET.get('page', 1))
+    search_q = request.GET.get('search', '').strip()
+    limit = 50
+    queryset = []
+    if category == 'ТП':
+        qs = RefTransformer.objects.all().order_by('type_name')
+        if search_q: qs = qs.filter(type_name__icontains=search_q)
+        queryset = qs
+    elif category == 'ЛЭП':
+        qs = RefLine.objects.all().order_by('mark')
+        if search_q: qs = qs.filter(mark__icontains=search_q)
+        queryset = qs
+    elif category == 'Абонент':
+        qs = RefConsumerType.objects.all().order_by('name')
+        if search_q: qs = qs.filter(name__icontains=search_q)
+        queryset = qs
+    else:
+        return JsonResponse({'error': 'Invalid category'}, status=400)
+
+    paginator = Paginator(queryset, limit)
+    try:
+        page_obj = paginator.page(page_num)
+    except:
+        page_obj = paginator.page(1)
+
+    data = []
+    for i in page_obj:
+        if category == 'ТП':
+            data.append({
+                'id': i.id,
+                'name': i.type_name,
+                'type': 'ТП',
+                'power': str(i.nominal_power) if i.nominal_power else '',
+                'details': {
+                    'Номинальная мощность, кВА': str(getattr(i, 'nominal_power', '—')),
+                    'Потери ХХ, кВт': str(getattr(i, 'losses_no_load', '—')),
+                    'Потери КЗ, кВт': str(getattr(i, 'losses_short_circuit', '—')),
+                    'Напряжение ВН, кВ': str(getattr(i, 'voltage_hv', '—')),
+                    'Напряжение НН, кВ': str(getattr(i, 'voltage_lv', '—')),
+                    'Напряжение КЗ, %': str(getattr(i, 'voltage_short_circuit_pct', '—')),
+                    'Кол-во ступеней ПБВ': str(getattr(i, 'pbv_stages_count', '—')),
+                    'Шаг ступени ПБВ, %': str(getattr(i, 'pbv_step_pct', '—'))
+                }
+            })
+        elif category == 'ЛЭП':
+            data.append({
+                'id': i.id,
+                'name': i.mark,
+                'type': 'ЛЭП',
+                'power': '',
+                'details': {
+                    'Марка ЛЭП': str(getattr(i, 'mark', '—')),
+                    'Материал провода': str(getattr(i, 'material', '—')),
+                    'Материал изоляции': str(getattr(i, 'insulation', '—')),
+                    'Количество жил': str(getattr(i, 'cores_count', '—')),
+                    'Сечение фазного провода, мм²': str(getattr(i, 'cross_section', '—')),
+                    'Сопротивление фазного, Ом/км': str(getattr(i, 'r_phase_ohm_km', '—')),
+                    'Сопротивление нулевого, Ом/км': str(getattr(i, 'r_null_ohm_km', '—')),
+                    'Сопротивление доп. провода, Ом/км': str(getattr(i, 'r_add_ohm_km', '—'))
+                }
+            })
+        elif category == 'Абонент':
+            data.append({
+                'id': i.id,
+                'name': i.name,
+                'type': 'Абонент',
+                'power': '',
+                'details': {
+                    'Характер потребления': str(getattr(i, 'usage_character', '—')),
+                    'Адрес': str(getattr(i, 'address', '—')),
+                    'Доп. данные': str(getattr(i, 'additional_data', '—')),
+                    'Питание': str(getattr(i, 'supply_type', '—')),
+                    'Расчётная акт. мощность, кВт': str(getattr(i, 'calculated_active_power_kw', '—')),
+                    'Коэффициент мощности': str(getattr(i, 'cos_phi', '—'))
+                }
+            })
+
+    return JsonResponse({
+        'items': data,
+        'total_pages': paginator.num_pages,
+        'current_page': page_obj.number
+    }, safe=False)
+
+
+def get_val(obj, field_name):
+    val = getattr(obj, field_name, None)
+    return str(val) if val is not None and str(val).strip() != "" else '—'
+
+
+def get_node_details(request):
+    db_id = request.GET.get('db_id')
+    obj_type = request.GET.get('type')
+    details = {}
+    if not db_id or not obj_type:
+        return JsonResponse({'details': details})
+
+    try:
+        if obj_type == 'ТП':
+            obj = RefTransformer.objects.get(id=db_id)
+            details = {
+                'Тип трансформатора': get_val(obj, 'type_name'),
+                'Номинальная мощность, кВА': get_val(obj, 'nominal_power'),
+                'Потери ХХ, кВт': get_val(obj, 'losses_no_load'),
+                'Потери КЗ, кВт': get_val(obj, 'losses_short_circuit'),
+                'Номинальное напряжение ВН, кВ': get_val(obj, 'voltage_hv'),
+                'Номинальное напряжение НН, кВ': get_val(obj, 'voltage_lv'),
+                'Напряжение КЗ, %': get_val(obj, 'voltage_short_circuit_pct'),
+                'Количество ступеней ПБВ': get_val(obj, 'pbv_stages_count'),
+                'Шаг одной ступени ПБВ, %': get_val(obj, 'pbv_step_pct')
+            }
+
+        elif obj_type == 'ЛЭП':
+            obj = RefLine.objects.get(id=db_id)
+            details = {
+                'Марка ЛЭП': get_val(obj, 'mark'),
+                'Материал провода': get_val(obj, 'material'),
+                'Материал изоляции': get_val(obj, 'insulation'),
+                'Количество жил': get_val(obj, 'cores_count'),
+                'Сечение фазного провода, мм²': get_val(obj, 'cross_section'),
+                'Сопротивление фазного, Ом/км': get_val(obj, 'r_phase_ohm_km'),
+                'Сопротивление нулевого, Ом/км': get_val(obj, 'r_null_ohm_km'),
+                'Сопротивление доп. провода, Ом/км': get_val(obj, 'r_add_ohm_km')
+            }
+
+        elif obj_type == 'Абонент':
+            obj = RefConsumerType.objects.get(id=db_id)
+            details = {
+                'Тип потребителя': get_val(obj, 'name'),
+                'Характер электропотребления': get_val(obj, 'usage_character'),
+                'Адрес потребителя': get_val(obj, 'address'),
+                'Дополнительные данные': get_val(obj, 'additional_data'),
+                'Питание потребителя': get_val(obj, 'supply_type'),
+                'Номер фазы': get_val(obj, 'phase_number'),
+                'Параметры электропотребления (тип)': get_val(obj, 'calc_method'),
+                'Годовое потребление, кВт*ч': get_val(obj, 'yearly_consumption_kwh'),
+                'Расчётная активная мощность, кВт': get_val(obj, 'calculated_active_power_kw'),
+                'Коэффициент мощности (косинус фи)': get_val(obj, 'cos_phi')
+            }
+
+    except Exception as e:
+        print(f"Ошибка загрузки деталей: {e}")
+
+    return JsonResponse({'details': details})
+
+
+@csrf_exempt
+def api_create_organization(request):
+    # Защита: только Суперюзер может создавать новые организации
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только главный администратор может создавать организации!'},
+                            status=403)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            org = Organization.objects.create(
+                name=data.get('name'),
+                address=data.get('region', ''),
+                phone=data.get('phone', ''),
+                fax=data.get('fax', '')
+            )
+            return JsonResponse({'status': 'success', 'message': f'Организация "{org.name}" успешно создана!'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_create_user(request):
+    # Защита: пускаем только админов и суперюзеров
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'У вас нет прав для создания пользователей'}, status=403)
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            login, email, password = data.get('login'), data.get('email'), data.get('password')
+            role_name = data.get('role')
+            org_id = data.get('organization_id')
+
+            # --- ВАЖНЕЙШАЯ ПРОВЕРКА БЕЗОПАСНОСТИ ---
+            # Если это локальный админ, он не имеет права передать чужой org_id
+            if not request.user.is_superuser:
+                admin_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+                if not admin_org or str(admin_org.id) != str(org_id):
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Вы можете создавать пользователей только внутри своей организации!'},
+                                        status=403)
+
+            # 1. Создаем системного пользователя
+            user, created = User.objects.get_or_create(username=login, defaults={'email': email,
+                                                                                 'first_name': data.get('first_name',
+                                                                                                        ''),
+                                                                                 'last_name': data.get('last_name',
+                                                                                                       '')})
+            if not created:
+                return JsonResponse({'status': 'error', 'message': f'Пользователь {login} уже существует.'})
+
+            user.set_password(password)
+
+            # РАЗДАЧА ПРАВ (Магия Django):
+            if role_name == 'admin':
+                user.is_staff = True  # Дает доступ в админ-панель
+            else:
+                user.is_staff = False  # Обычные инженеры и зрители
+            user.save()
+
+            # 2. Создаем кастомный профиль
+            org = Organization.objects.filter(id=org_id).first() if org_id else None
+            UserProfile.objects.create(user=user, patronymic=data.get('patronymic', ''), phone=data.get('phone', ''),
+                                       organization=org)
+
+            # 3. Сохраняем текстовую роль для истории
+            Role.objects.get_or_create(name=role_name)
+
+            return JsonResponse({'status': 'success', 'message': f'Пользователь {login} успешно создан!'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+def logout_view(request):
+    logout(request)
+    # После выхода отправляем пользователя на главную страницу (редактор)
+    # Так как редактор защищен для админки, при следующей попытке войти
+    # система снова попросит логин и пароль.
+    return redirect('editor')
+
+
+# ==========================================
+# НОВЫЕ ФУНКЦИИ ДЛЯ УПРАВЛЕНИЯ СПРАВОЧНИКАМИ
+# ==========================================
+
+# --- ТРАНСФОРМАТОРЫ (RefTransformer) ---
+@csrf_exempt
+def api_transformers_list(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    transformers = RefTransformer.objects.all().order_by('type_name')
+    data = []
+    for t in transformers:
+        data.append({
+            'id': t.id,
+            'type_name': t.type_name or '',
+            'nominal_power': str(t.nominal_power) if t.nominal_power else '',
+            'losses_no_load': str(t.losses_no_load) if t.losses_no_load else '',
+            'losses_short_circuit': str(t.losses_short_circuit) if t.losses_short_circuit else '',
+            'voltage_hv': str(t.voltage_hv) if t.voltage_hv else '',
+            'voltage_lv': str(t.voltage_lv) if t.voltage_lv else '',
+            'voltage_short_circuit_pct': str(t.voltage_short_circuit_pct) if t.voltage_short_circuit_pct else '',
+            'pbv_stages_count': str(t.pbv_stages_count) if t.pbv_stages_count else '',
+            'pbv_step_pct': str(t.pbv_step_pct) if t.pbv_step_pct else '',
+        })
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def api_transformer_create(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            transformer = RefTransformer.objects.create(
+                type_name=data.get('type_name', ''),
+                nominal_power=float(data.get('nominal_power', 0)) if data.get('nominal_power') else None,
+                losses_no_load=float(data.get('losses_no_load', 0)) if data.get('losses_no_load') else None,
+                losses_short_circuit=float(data.get('losses_short_circuit', 0)) if data.get(
+                    'losses_short_circuit') else None,
+                voltage_hv=float(data.get('voltage_hv', 0)) if data.get('voltage_hv') else None,
+                voltage_lv=float(data.get('voltage_lv', 0)) if data.get('voltage_lv') else None,
+                voltage_short_circuit_pct=float(data.get('voltage_short_circuit_pct', 0)) if data.get(
+                    'voltage_short_circuit_pct') else None,
+                pbv_stages_count=int(data.get('pbv_stages_count', 0)) if data.get('pbv_stages_count') else None,
+                pbv_step_pct=float(data.get('pbv_step_pct', 0)) if data.get('pbv_step_pct') else None,
+            )
+            return JsonResponse({'status': 'success', 'message': 'Трансформатор создан', 'id': transformer.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_transformer_update(request, obj_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            transformer = get_object_or_404(RefTransformer, id=obj_id)
+            data = json.loads(request.body)
+
+            if 'type_name' in data:
+                transformer.type_name = data.get('type_name', '')
+            if 'nominal_power' in data:
+                transformer.nominal_power = float(data.get('nominal_power', 0)) if data.get('nominal_power') else None
+            if 'losses_no_load' in data:
+                transformer.losses_no_load = float(data.get('losses_no_load', 0)) if data.get(
+                    'losses_no_load') else None
+            if 'losses_short_circuit' in data:
+                transformer.losses_short_circuit = float(data.get('losses_short_circuit', 0)) if data.get(
+                    'losses_short_circuit') else None
+            if 'voltage_hv' in data:
+                transformer.voltage_hv = float(data.get('voltage_hv', 0)) if data.get('voltage_hv') else None
+            if 'voltage_lv' in data:
+                transformer.voltage_lv = float(data.get('voltage_lv', 0)) if data.get('voltage_lv') else None
+            if 'voltage_short_circuit_pct' in data:
+                transformer.voltage_short_circuit_pct = float(data.get('voltage_short_circuit_pct', 0)) if data.get(
+                    'voltage_short_circuit_pct') else None
+            if 'pbv_stages_count' in data:
+                transformer.pbv_stages_count = int(data.get('pbv_stages_count', 0)) if data.get(
+                    'pbv_stages_count') else None
+            if 'pbv_step_pct' in data:
+                transformer.pbv_step_pct = float(data.get('pbv_step_pct', 0)) if data.get('pbv_step_pct') else None
+
+            transformer.save()
+            return JsonResponse({'status': 'success', 'message': 'Трансформатор обновлен'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_transformer_delete(request, obj_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только суперюзер может удалять'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            transformer = get_object_or_404(RefTransformer, id=obj_id)
+            transformer.delete()
+            return JsonResponse({'status': 'success', 'message': 'Трансформатор удален'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+# --- ЛЭП (RefLine) ---
+@csrf_exempt
+def api_lines_list(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    lines = RefLine.objects.all().order_by('mark')
+    data = []
+    for l in lines:
+        data.append({
+            'id': l.id,
+            'mark': l.mark or '',
+            'material': l.material or '',
+            'insulation': l.insulation or '',
+            'cores_count': str(l.cores_count) if l.cores_count else '',
+            'cross_section': str(l.cross_section) if l.cross_section else '',
+            'r_phase_ohm_km': str(l.r_phase_ohm_km) if l.r_phase_ohm_km else '',
+            'r_null_ohm_km': str(l.r_null_ohm_km) if l.r_null_ohm_km else '',
+            'r_add_ohm_km': str(l.r_add_ohm_km) if l.r_add_ohm_km else '',
+        })
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def api_line_create(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            line = RefLine.objects.create(
+                mark=data.get('mark', ''),
+                material=data.get('material', ''),
+                insulation=data.get('insulation', ''),
+                cores_count=int(data.get('cores_count', 0)) if data.get('cores_count') else None,
+                cross_section=float(data.get('cross_section', 0)) if data.get('cross_section') else None,
+                r_phase_ohm_km=float(data.get('r_phase_ohm_km', 0)) if data.get('r_phase_ohm_km') else None,
+                r_null_ohm_km=float(data.get('r_null_ohm_km', 0)) if data.get('r_null_ohm_km') else None,
+                r_add_ohm_km=float(data.get('r_add_ohm_km', 0)) if data.get('r_add_ohm_km') else None,
+            )
+            return JsonResponse({'status': 'success', 'message': 'ЛЭП создана', 'id': line.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_line_update(request, obj_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            line = get_object_or_404(RefLine, id=obj_id)
+            data = json.loads(request.body)
+
+            if 'mark' in data:
+                line.mark = data.get('mark', '')
+            if 'material' in data:
+                line.material = data.get('material', '')
+            if 'insulation' in data:
+                line.insulation = data.get('insulation', '')
+            if 'cores_count' in data:
+                line.cores_count = int(data.get('cores_count', 0)) if data.get('cores_count') else None
+            if 'cross_section' in data:
+                line.cross_section = float(data.get('cross_section', 0)) if data.get('cross_section') else None
+            if 'r_phase_ohm_km' in data:
+                line.r_phase_ohm_km = float(data.get('r_phase_ohm_km', 0)) if data.get('r_phase_ohm_km') else None
+            if 'r_null_ohm_km' in data:
+                line.r_null_ohm_km = float(data.get('r_null_ohm_km', 0)) if data.get('r_null_ohm_km') else None
+            if 'r_add_ohm_km' in data:
+                line.r_add_ohm_km = float(data.get('r_add_ohm_km', 0)) if data.get('r_add_ohm_km') else None
+
+            line.save()
+            return JsonResponse({'status': 'success', 'message': 'ЛЭП обновлена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_line_delete(request, obj_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только суперюзер может удалять'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            line = get_object_or_404(RefLine, id=obj_id)
+            line.delete()
+            return JsonResponse({'status': 'success', 'message': 'ЛЭП удалена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+# --- ПОТРЕБИТЕЛИ (RefConsumerType) ---
+@csrf_exempt
+def api_consumers_list(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    consumers = RefConsumerType.objects.all().order_by('name')
+    data = []
+    for c in consumers:
+        data.append({
+            'id': c.id,
+            'name': c.name or '',
+            'usage_character': c.usage_character or '',
+            'address': c.address or '',
+            'additional_data': c.additional_data or '',
+            'supply_type': c.supply_type or '',
+            'phase_number': str(c.phase_number) if c.phase_number else '',
+            'calc_method': c.calc_method or '',
+            'yearly_consumption_kwh': str(c.yearly_consumption_kwh) if c.yearly_consumption_kwh else '',
+            'calculated_active_power_kw': str(c.calculated_active_power_kw) if c.calculated_active_power_kw else '',
+            'cos_phi': str(c.cos_phi) if c.cos_phi else '',
+        })
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def api_consumer_create(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            consumer = RefConsumerType.objects.create(
+                name=data.get('name', ''),
+                usage_character=data.get('usage_character', ''),
+                address=data.get('address', ''),
+                additional_data=data.get('additional_data', ''),
+                supply_type=data.get('supply_type', ''),
+                phase_number=int(data.get('phase_number', 0)) if data.get('phase_number') else None,
+                calc_method=data.get('calc_method', ''),
+                yearly_consumption_kwh=float(data.get('yearly_consumption_kwh', 0)) if data.get(
+                    'yearly_consumption_kwh') else None,
+                calculated_active_power_kw=float(data.get('calculated_active_power_kw', 0)) if data.get(
+                    'calculated_active_power_kw') else None,
+                cos_phi=float(data.get('cos_phi', 0)) if data.get('cos_phi') else None,
+            )
+            return JsonResponse({'status': 'success', 'message': 'Потребитель создан', 'id': consumer.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_consumer_update(request, obj_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            consumer = get_object_or_404(RefConsumerType, id=obj_id)
+            data = json.loads(request.body)
+
+            if 'name' in data:
+                consumer.name = data.get('name', '')
+            if 'usage_character' in data:
+                consumer.usage_character = data.get('usage_character', '')
+            if 'address' in data:
+                consumer.address = data.get('address', '')
+            if 'additional_data' in data:
+                consumer.additional_data = data.get('additional_data', '')
+            if 'supply_type' in data:
+                consumer.supply_type = data.get('supply_type', '')
+            if 'phase_number' in data:
+                consumer.phase_number = int(data.get('phase_number', 0)) if data.get('phase_number') else None
+            if 'calc_method' in data:
+                consumer.calc_method = data.get('calc_method', '')
+            if 'yearly_consumption_kwh' in data:
+                consumer.yearly_consumption_kwh = float(data.get('yearly_consumption_kwh', 0)) if data.get(
+                    'yearly_consumption_kwh') else None
+            if 'calculated_active_power_kw' in data:
+                consumer.calculated_active_power_kw = float(data.get('calculated_active_power_kw', 0)) if data.get(
+                    'calculated_active_power_kw') else None
+            if 'cos_phi' in data:
+                consumer.cos_phi = float(data.get('cos_phi', 0)) if data.get('cos_phi') else None
+
+            consumer.save()
+            return JsonResponse({'status': 'success', 'message': 'Потребитель обновлен'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_consumer_delete(request, obj_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только суперюзер может удалять'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            consumer = get_object_or_404(RefConsumerType, id=obj_id)
+            consumer.delete()
+            return JsonResponse({'status': 'success', 'message': 'Потребитель удален'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+# --- ОРГАНИЗАЦИИ (Organization) ---
+@csrf_exempt
+def api_organizations_list(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.user.is_superuser:
+        organizations = Organization.objects.all()
+    else:
+        user_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+        if user_org:
+            organizations = Organization.objects.filter(id=user_org.id)
+        else:
+            organizations = Organization.objects.none()
+
+    data = []
+    for org in organizations:
+        data.append({
+            'id': org.id,
+            'name': org.name or '',
+            'address': org.address or '',
+            'phone': org.phone or '',
+            'fax': org.fax or '',
+        })
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def api_organization_update(request, obj_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            org = get_object_or_404(Organization, id=obj_id)
+            data = json.loads(request.body)
+
+            if not request.user.is_superuser:
+                admin_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+                if not admin_org or admin_org.id != org.id:
+                    return JsonResponse({'status': 'error', 'message': 'Можно редактировать только свою организацию'},
+                                        status=403)
+
+            if 'name' in data:
+                org.name = data.get('name', '')
+            if 'address' in data:
+                org.address = data.get('address', '')
+            if 'phone' in data:
+                org.phone = data.get('phone', '')
+            if 'fax' in data:
+                org.fax = data.get('fax', '')
+
+            org.save()
+            return JsonResponse({'status': 'success', 'message': 'Организация обновлена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_organization_delete(request, obj_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только суперюзер может удалять'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            org = get_object_or_404(Organization, id=obj_id)
+            org.delete()
+            return JsonResponse({'status': 'success', 'message': 'Организация удалена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+# --- ПОЛЬЗОВАТЕЛИ (User) ---
+@csrf_exempt
+def api_users_list(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.user.is_superuser:
+        users = User.objects.all().order_by('username')
+    else:
+        admin_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+        if admin_org:
+            users = User.objects.filter(profile__organization=admin_org).order_by('username')
+        else:
+            users = User.objects.none()
+
+    data = []
+    for u in users:
+        org_name = ''
+        if hasattr(u, 'profile') and u.profile.organization:
+            org_name = u.profile.organization.name
+        data.append({
+            'id': u.id,
+            'username': u.username or '',
+            'email': u.email or '',
+            'first_name': u.first_name or '',
+            'last_name': u.last_name or '',
+            'is_staff': u.is_staff,
+            'is_superuser': u.is_superuser,
+            'organization': org_name,
+            'phone': u.profile.phone if hasattr(u, 'profile') else '',
+            'patronymic': u.profile.patronymic if hasattr(u, 'profile') else '',
+        })
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+@csrf_exempt
+def api_user_update(request, obj_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Доступ запрещен'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            user = get_object_or_404(User, id=obj_id)
+            data = json.loads(request.body)
+
+            if not request.user.is_superuser:
+                admin_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+                user_org = user.profile.organization if hasattr(user, 'profile') else None
+                if not admin_org or admin_org.id != (user_org.id if user_org else None):
+                    return JsonResponse(
+                        {'status': 'error', 'message': 'Можно редактировать только пользователей своей организации'},
+                        status=403)
+
+            if 'username' in data:
+                user.username = data.get('username', '')
+            if 'email' in data:
+                user.email = data.get('email', '')
+            if 'first_name' in data:
+                user.first_name = data.get('first_name', '')
+            if 'last_name' in data:
+                user.last_name = data.get('last_name', '')
+            if 'is_staff' in data:
+                if request.user.is_superuser:
+                    user.is_staff = data.get('is_staff', False)
+
+            user.save()
+
+            if hasattr(user, 'profile'):
+                profile = user.profile
+                if 'phone' in data:
+                    profile.phone = data.get('phone', '')
+                if 'patronymic' in data:
+                    profile.patronymic = data.get('patronymic', '')
+                profile.save()
+
+            return JsonResponse({'status': 'success', 'message': 'Пользователь обновлен'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_user_delete(request, obj_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Только суперюзер может удалять'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            user = get_object_or_404(User, id=obj_id)
+            user.delete()
+            return JsonResponse({'status': 'success', 'message': 'Пользователь удален'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+# ДОБАВИТЬ В САМЫЙ НИЗ ФАЙЛА designer/views.py
+
+@csrf_exempt
+def api_get_registry(request):
+    """Отдает список всех папок и схем для построения дерева."""
+    # Извлекаем нужные поля из БД в виде словарей
+    folders = list(Folder.objects.values('id', 'name', 'parent_id'))
+    schemes = list(Scheme.objects.values('id', 'name', 'folder_id'))
+
+    return JsonResponse({
+        'status': 'success',
+        'folders': folders,
+        'schemes': schemes
+    })
+
+
+@csrf_exempt
+def api_create_folder(request):
+    """Создает новую папку (вызывается из Админки)."""
+    if not request.user.is_staff and not request.user.is_superuser:
+        return JsonResponse({'status': 'error', 'message': 'Нет прав для создания папок'}, status=403)
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            name = data.get('name')
+            parent_id = data.get('parent_id')
+
+            if not name:
+                return JsonResponse({'status': 'error', 'message': 'Имя папки обязательно'}, status=400)
+
+            # Привязываем папку к организации админа (или берем первую попавшуюся для защиты от ошибок)
+            org = None
+            if hasattr(request.user, 'profile') and request.user.profile.organization:
+                org = request.user.profile.organization
+            else:
+                org = Organization.objects.first()
+                if not org:
+                    org = Organization.objects.create(name="Главная организация")
+
+            # Находим родительскую папку, если parent_id передан
+            parent = Folder.objects.filter(id=parent_id).first() if parent_id else None
+
+            Folder.objects.create(name=name, parent=parent, org=org)
+            return JsonResponse({'status': 'success', 'message': 'Папка успешно создана'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_edit_folder(request, folder_id):
+    """Обновляет название и расположение папки."""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Нет прав'}, status=403)
+
+    if request.method == 'PUT':
+        try:
+            data = json.loads(request.body)
+            folder = Folder.objects.get(id=folder_id)
+
+            # Обновляем имя
+            folder.name = data.get('name', folder.name)
+
+            # Обновляем родителя
+            parent_id = data.get('parent_id')
+            folder.parent = Folder.objects.filter(id=parent_id).first() if parent_id else None
+
+            folder.save()
+            return JsonResponse({'status': 'success', 'message': 'Папка обновлена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+@csrf_exempt
+def api_delete_folder(request, folder_id):
+    """Удаляет папку и всё её содержимое."""
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Нет прав'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            folder = Folder.objects.get(id=folder_id)
+            folder.delete()  # Django автоматически удалит все вложенные папки, если настроено cascade
+            return JsonResponse({'status': 'success', 'message': 'Папка удалена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)
+
+
+def load_scheme_by_id_api(request, scheme_id):
+    # Получаем самую свежую версию (revision) для этой схемы
+    scheme = get_object_or_404(Scheme, id=scheme_id)
+    last_revision = scheme.revisions.order_by('-created_at').first()
+
+    if not last_revision:
+        return JsonResponse({"status": "error", "message": "У схемы нет сохранений"}, status=404)
+
+    return JsonResponse({
+        "status": "success",
+        "name": scheme.name,
+        "topology_data": last_revision.topology_data
+    })
+
+
+def admin_panel_view(request):
+    if not request.user.is_authenticated:
+        return redirect('/admin/login/?next=/admin-panel/')
+    is_super = request.user.is_superuser
+    is_admin = request.user.is_staff
+    if not (is_super or is_admin):
+        return HttpResponseForbidden("Доступ запрещен")
+    if is_super:
+        organizations = Organization.objects.all()
+    else:
+        user_org = request.user.profile.organization if hasattr(request.user, 'profile') else None
+        organizations = Organization.objects.filter(id=user_org.id) if user_org else Organization.objects.none()
+    return render(request, 'designer/admin_panel.html', {'organizations': organizations, 'is_super': is_super})
+
+
+def editor_view(request):
+    organizations = Organization.objects.prefetch_related('folders__schemes__revisions').all()
+    return render(request, 'designer/index.html', {'organizations': organizations})
+
+
+@csrf_exempt
+def save_scheme_api(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            # Извлекаем динамические данные
+            scheme_name = data.get('name', 'Новая схема')
+            folder_id = data.get('folder_id')
+            topology = {'nodes': data.get('nodes', []), 'lines': data.get('lines', [])}
+
+            # Находим папку или создаем дефолтную если ID не передан
+            if folder_id:
+                folder = get_object_or_404(Folder, id=folder_id)
+            else:
+                org, _ = Organization.objects.get_or_create(name="Главная организация")
+                folder, _ = Folder.objects.get_or_create(name="Рабочие схемы", org=org)
+
+            scheme, created = Scheme.objects.get_or_create(name=scheme_name, folder=folder)
+
+            revision = SchemeRevision.objects.create(
+                scheme=scheme,
+                label=f"Версия от {timezone.now().strftime('%d.%m.%Y %H:%M')}",
+                topology_data=topology,
+                created_by=request.user if request.user.is_authenticated else None
+            )
+            return JsonResponse({"status": "success", "id": revision.id})
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=400)
+    return JsonResponse({"status": "error", "message": "Only POST allowed"}, status=405)
+
+
+def list_revisions_api(request):
+    revisions = SchemeRevision.objects.all().order_by('-created_at').values('id', 'label', 'created_at')
+    return JsonResponse({"status": "success", "revisions": list(revisions)})
+
+
+def load_scheme_api(request, rev_id):
+    revision = get_object_or_404(SchemeRevision, id=rev_id)
+    return JsonResponse({"status": "success", "topology_data": revision.topology_data, "label": revision.label})
+
+
+def api_get_registry(request):
+    folders = list(Folder.objects.values('id', 'name', 'parent_id'))
+    schemes = list(Scheme.objects.values('id', 'name', 'folder_id'))
+    return JsonResponse({'status': 'success', 'folders': folders, 'schemes': schemes})
+
+
+@csrf_exempt
+def api_create_folder(request):
+    if not request.user.is_staff: return JsonResponse({'status': 'error'}, status=403)
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        parent = Folder.objects.filter(id=data.get('parent_id')).first()
+        org = Organization.objects.first()
+        Folder.objects.create(name=data.get('name'), parent=parent, org=org)
+        return JsonResponse({'status': 'success'})
+
+
+@csrf_exempt
+def api_edit_folder(request, folder_id):
+    if request.method == 'PUT':
+        folder = get_object_or_404(Folder, id=folder_id)
+        data = json.loads(request.body)
+        folder.name = data.get('name', folder.name)
+        folder.save()
+        return JsonResponse({'status': 'success'})
+
+
+@csrf_exempt
+def api_delete_folder(request, folder_id):
+    if request.method == 'DELETE':
+        folder = get_object_or_404(Folder, id=folder_id)
+        folder.delete()
+        return JsonResponse({'status': 'success'})
+
+
+# Справочники (ТП, ЛЭП, Абоненты)
+def get_catalog_nodes(request):
+    category = request.GET.get('category')
+    page_num = int(request.GET.get('page', 1))
+    search_q = request.GET.get('search', '').strip()
+    limit = 50
+    if category == 'ТП':
+        qs = RefTransformer.objects.all().order_by('type_name')
+        if search_q: qs = qs.filter(type_name__icontains=search_q)
+    elif category == 'ЛЭП':
+        qs = RefLine.objects.all().order_by('mark')
+        if search_q: qs = qs.filter(mark__icontains=search_q)
+    elif category == 'Абонент':
+        qs = RefConsumerType.objects.all().order_by('name')
+        if search_q: qs = qs.filter(name__icontains=search_q)
+    else:
+        return JsonResponse({'error': 'Invalid category'}, status=400)
+
+    paginator = Paginator(qs, limit)
+    page_obj = paginator.get_page(page_num)
+    data = []
+    for i in page_obj:
+        if category == 'ТП':
+            data.append({'id': i.id, 'name': i.type_name, 'type': 'ТП', 'power': str(i.nominal_power)})
+        elif category == 'ЛЭП':
+            data.append({'id': i.id, 'name': i.mark, 'type': 'ЛЭП'})
+        elif category == 'Абонент':
+            data.append({'id': i.id, 'name': i.name, 'type': 'Абонент'})
+    return JsonResponse({'items': data, 'total_pages': paginator.num_pages, 'current_page': page_obj.number})
+
+
+# Админка
+@csrf_exempt
+def api_create_organization(request):
+    if not request.user.is_superuser: return JsonResponse({'status': 'error'}, status=403)
+    data = json.loads(request.body)
+    Organization.objects.create(name=data.get('name'), address=data.get('region'))
+    return JsonResponse({'status': 'success'})
+
+
+@csrf_exempt
+def api_create_user(request):
+    if not request.user.is_staff: return JsonResponse({'status': 'error'}, status=403)
+    data = json.loads(request.body)
+    user = User.objects.create_user(username=data.get('login'), email=data.get('email'), password=data.get('password'))
+    return JsonResponse({'status': 'success'})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('editor')
+
+
+# Списки для админки
+def api_transformers_list(request):
+    data = list(RefTransformer.objects.all().values())
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+def api_transformer_create(request):
+    return JsonResponse({'status': 'success'})
+
+
+def api_transformer_update(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_transformer_delete(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_lines_list(request):
+    data = list(RefLine.objects.all().values())
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+def api_line_create(request):
+    return JsonResponse({'status': 'success'})
+
+
+def api_line_update(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_line_delete(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_consumers_list(request):
+    data = list(RefConsumerType.objects.all().values())
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+def api_consumer_create(request):
+    return JsonResponse({'status': 'success'})
+
+
+def api_consumer_update(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_consumer_delete(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_organizations_list(request):
+    data = list(Organization.objects.all().values())
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+def api_organization_update(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_organization_delete(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_users_list(request):
+    data = list(User.objects.all().values('id', 'username', 'email', 'is_staff'))
+    return JsonResponse({'status': 'success', 'data': data})
+
+
+def api_user_update(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+
+def api_user_delete(request, obj_id):
+    return JsonResponse({'status': 'success'})
+
+@csrf_exempt
+def api_delete_scheme(request, scheme_id):
+    if not (request.user.is_staff or request.user.is_superuser):
+        return JsonResponse({'status': 'error', 'message': 'Нет прав'}, status=403)
+
+    if request.method == 'DELETE':
+        try:
+            scheme = get_object_or_404(Scheme, id=scheme_id)
+            scheme.delete()
+            return JsonResponse({'status': 'success', 'message': 'Схема удалена'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    return JsonResponse({'status': 'error', 'message': 'Метод не поддерживается'}, status=405)

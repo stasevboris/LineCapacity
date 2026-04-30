@@ -1,0 +1,466 @@
+:root {
+    --form-bg: #1e1e1e;
+    --editor-bg: #121212;
+    --sidebar-bg: #181818;
+    --accent: #2ecc71;
+    --border: #333333;
+    --text-main: #ffffff;
+    --text-sec: #888888;
+    --grid-size: 50px;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--form-bg);
+    color: var(--text-main);
+}
+
+/* --- ВЕРХНЯЯ ПАНЕЛЬ --- */
+#toolbar {
+    height: 60px;
+    background: var(--form-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 15px;
+    z-index: 100;
+}
+
+.tool-btn {
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    background: #2b2b2b;
+    color: var(--text-main);
+    cursor: pointer;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.tool-btn.active {
+    background: var(--accent);
+    color: #000000;
+    border-color: var(--accent);
+}
+
+.tool-btn:hover:not(.active) {
+    background: #333333;
+    border-color: var(--accent);
+}
+
+/* Стили для кнопок API */
+.btn-save { background: #27ae60; border: none; margin-left: auto; color: white; }
+.btn-save:hover { background: #2ecc71; }
+.btn-load { background: #2980b9; border: none; color: white; }
+.btn-load:hover { background: #3498db; }
+
+/* --- МОДАЛЬНОЕ ОКНО ВЫБОРА ВЕРСИИ --- */
+#modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; z-index: 2000;
+    justify-content: center; align-items: center;
+}
+.modal-content {
+    background: var(--sidebar-bg); padding: 25px; border-radius: 8px;
+    border: 1px solid var(--border); width: 450px; max-height: 70vh; display: flex; flex-direction: column;
+}
+.rev-list { overflow-y: auto; margin-top: 15px; }
+.rev-item {
+    padding: 12px; border-bottom: 1px solid var(--border); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: 0.2s;
+}
+.rev-item:hover { background: #2b2b2b; color: var(--accent); }
+.close-btn { align-self: flex-end; cursor: pointer; font-size: 20px; color: var(--text-sec); }
+
+/* --- ОСНОВНОЙ КОНТЕЙНЕР --- */
+#main-container { display: flex; flex-grow: 1; overflow: hidden; }
+
+#sidebar-left {
+    width: 220px;
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#sidebar-right {
+    width: 280px;
+    background: var(--sidebar-bg);
+    border-left: 1px solid var(--border);
+    padding: 20px;
+    display: none;
+    overflow-y: auto;
+}
+
+#canvas-container {
+    flex-grow: 1;
+    position: relative;
+    background: var(--editor-bg);
+    overflow: hidden;
+}
+
+/* --- БИБЛИОТЕКА --- */
+.lib-item {
+    padding: 12px;
+    background: #2b2b2b;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: grab;
+    user-select: none;
+    color: var(--text-main);
+    transition: 0.2s;
+}
+.lib-item:hover { background: #333333; border-color: var(--accent); }
+
+svg { width: 100%; height: 100%; }
+
+/* --- СТИЛИ ОБЪЕКТОВ СХЕМЫ --- */
+.node {
+    cursor: move;
+    fill: #1e1e1e;
+    stroke: var(--accent);
+    stroke-width: 3;
+    transition: stroke 0.2s;
+}
+.node.selected { stroke: #f1c40f; stroke-width: 5; }
+.node.can-attach { stroke: var(--accent); stroke-width: 6; filter: drop-shadow(0 0 6px rgba(46, 204, 113, 0.8)); }
+
+.node-label {
+    font-size: 11px;
+    pointer-events: none;
+    fill: var(--text-main);
+    text-anchor: middle;
+    font-weight: 600;
+    user-select: none;
+}
+
+/* Текстовые блоки */
+.text-node {
+    fill: var(--text-main);
+    font-family: 'Segoe UI', sans-serif;
+    cursor: move;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    user-select: none;
+}
+.text-node.selected { fill: #f1c40f; font-weight: bold; filter: drop-shadow(0 0 4px rgba(241, 196, 15, 0.4)); }
+
+/* Линии */
+.line-path {
+    stroke: #aaaaaa;
+    stroke-width: 4;
+    fill: none;
+    stroke-linejoin: round;
+    pointer-events: stroke;
+    cursor: pointer;
+    transition: stroke 0.2s;
+}
+.line-path:hover { stroke: var(--text-main); }
+.line-path.selected { stroke: #f1c40f; stroke-width: 6; }
+
+.line-handle { fill: var(--form-bg); stroke: var(--accent); stroke-width: 2; cursor: crosshair; }
+.line-handle:hover, .line-handle.active { fill: var(--accent); }
+
+.drawing-line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5; fill: none; pointer-events: none; }
+
+/* Рамка выделения */
+#selection-rect { fill: rgba(46, 204, 113, 0.1); stroke: var(--accent); stroke-dasharray: 5; display: none; }
+
+/* --- КОНТЕКСТНОЕ МЕНЮ --- */
+#context-menu {
+    position: absolute;
+    display: none;
+    background: #2b2b2b;
+    border: 1px solid var(--border);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    z-index: 1000;
+    border-radius: 6px;
+    overflow: hidden;
+}
+.menu-item { padding: 10px 20px; cursor: pointer; color: var(--text-main); }
+.menu-item:hover { background: #3a3a3a; color: var(--accent); }
+.menu-item.danger { color: #ff5252; border-top: 1px solid var(--border); }
+.menu-item.danger:hover { background: #4a1a1a; color: #ff5252; }
+
+/* --- ПРАВАЯ ПАНЕЛЬ СВОЙСТВ --- */
+.prop-group { margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+.prop-group label { display: block; font-size: 11px; color: var(--text-sec); margin-bottom: 8px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+.prop-group input {
+    width: 100%;
+    padding: 10px;
+    background: #242424;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    box-sizing: border-box;
+    outline: none;
+}
+.prop-group input:focus { border-color: var(--accent); }
+
+.action-btn {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    cursor: pointer;
+    background: #2b2b2b;
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: 0.2s;
+}
+.action-btn:hover:not(:disabled) { background: #333333; border-color: var(--accent); color: var(--accent); }
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Кнопки каталога */
+.catalog-btn {
+    width: 100%;
+    padding: 12px;
+    background: #2b2b2b;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: left;
+    font-size: 13px;
+}
+
+.catalog-btn:hover {
+    background: #333;
+    border-color: #2ecc71;
+    color: #2ecc71;
+}
+
+/* Стили для списка версий */
+.rev-list {
+    overflow-y: auto;
+    margin-top: 15px;
+    max-height: 400px;
+}
+
+.rev-item {
+    padding: 12px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
+}
+
+.rev-item:hover {
+    background: #2b2b2b;
+    color: #2ecc71;
+}
+
+/* Стили для линии при рисовании */
+.drawing-line {
+    stroke: #2ecc71;
+    stroke-width: 2;
+    stroke-dasharray: 5;
+    fill: none;
+    pointer-events: none;
+}
+
+/* Стили для выпадающих списков */
+select {
+    background: #242424;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    width: 100%;
+}
+
+select option {
+    background: #242424;
+    color: #fff;
+}
+
+/* Стили для полей ввода */
+input[type="text"], input[type="number"] {
+    background: #242424;
+    color: #fff;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #2ecc71;
+}
+
+/* Кнопки действий */
+.action-btn {
+    padding: 10px 15px;
+    background: #2b2b2b;
+    border: 1px solid #333;
+    border-radius: 6px;
+    color: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+/* ==========================================
+   СВЕТЛАЯ ТЕМА
+   ========================================== */
+body.light-theme {
+    --form-bg: #f5f6f8;
+    --editor-bg: #ffffff;
+    --sidebar-bg: #eceef2;
+    --accent: #27ae60;
+    --border: #d1d5db;
+    --text-main: #1a1a1a;
+    --text-sec: #5a6270;
+}
+
+body.light-theme .tool-btn {
+    background: #ffffff;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+body.light-theme .tool-btn:hover:not(.active) {
+    background: #e8eaef;
+    border-color: var(--accent);
+}
+body.light-theme .tool-btn.active {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+}
+body.light-theme .btn-save { background: #27ae60; color: #ffffff; }
+body.light-theme .btn-save:hover { background: #2ecc71; }
+body.light-theme .btn-load { background: #3498db; color: #ffffff; }
+
+body.light-theme .lib-item {
+    background: #ffffff;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+body.light-theme .lib-item:hover { background: #e8eaef; border-color: var(--accent); }
+
+body.light-theme #toolbar .lib-item {
+    background: #27ae60;
+    color: #ffffff;
+    border-color: #27ae60;
+}
+body.light-theme #toolbar .lib-item:hover { background: #2ecc71; }
+
+body.light-theme .node { fill: #ffffff; }
+body.light-theme .node-label { fill: var(--text-main); }
+body.light-theme .text-node { fill: var(--text-main); }
+body.light-theme .line-path { stroke: #6b7280; }
+body.light-theme .line-path:hover { stroke: var(--text-main); }
+body.light-theme .line-handle { fill: #ffffff; }
+
+body.light-theme #smallGridPath { stroke: #c7ccd4; }
+body.light-theme #majorGridPath { stroke: #d7dce4; }
+
+body.light-theme .prop-group input,
+body.light-theme input[type="text"],
+body.light-theme input[type="number"],
+body.light-theme select,
+body.light-theme select option {
+    background: #ffffff !important;
+    color: var(--text-main) !important;
+    border-color: var(--border) !important;
+}
+body.light-theme input[style*="#242424"],
+body.light-theme input[style*="#1a1a1a"],
+body.light-theme select[style*="#1a1a1a"],
+body.light-theme textarea[style*="#1a1a1a"] {
+    background: #eceef2 !important;
+    color: var(--text-main) !important;
+    border-color: var(--border) !important;
+}
+body.light-theme div[id="connections-info"][style*="#1a1a1a"] {
+    background: #eceef2 !important;
+}
+body.light-theme div[id="point-editor"][style*="#1e1e1e"] {
+    background: #eceef2 !important;
+    color: var(--text-main);
+}
+
+body.light-theme .action-btn {
+    background: #ffffff;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+body.light-theme .action-btn:hover:not(:disabled) {
+    background: #e8eaef;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+body.light-theme .catalog-btn {
+    background: #ffffff;
+    color: var(--text-main);
+    border-color: var(--border);
+}
+body.light-theme .catalog-btn:hover {
+    background: #e8eaef;
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+body.light-theme #context-menu {
+    background: #ffffff;
+    border-color: var(--border);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+body.light-theme .menu-item { color: var(--text-main); }
+body.light-theme .menu-item:hover { background: #e8eaef; color: var(--accent); }
+body.light-theme .menu-item.danger:hover { background: #fdecea; }
+
+body.light-theme #modal-overlay { background: rgba(0,0,0,0.35); }
+body.light-theme .modal-content {
+    background: #ffffff;
+    border-color: var(--border);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    color: var(--text-main);
+}
+body.light-theme .rev-item { border-bottom-color: var(--border); color: var(--text-main); }
+body.light-theme .rev-item:hover { background: #e8eaef; color: var(--accent); }
+body.light-theme .close-btn { color: var(--text-sec); }
+
+body.light-theme #save-modal-overlay .modal-content { background: #ffffff !important; }
+body.light-theme button[class="btn-secondary"][style*="#333"] {
+    background: #e8eaef !important;
+    color: var(--text-main) !important;
+}
+
+body.light-theme .tree-summary { color: var(--text-main); }
+body.light-theme .tree-details[open] > .tree-summary { color: var(--accent); }
+body.light-theme .tree-file { color: #4a5160; }
+body.light-theme .tree-file:hover { background: rgba(39,174,96,0.1); color: var(--text-main); }
+body.light-theme .tree-file.active { background: rgba(39,174,96,0.18); color: var(--text-main); border-color: var(--accent); }
+body.light-theme .tree-details { border-left-color: #c7ccd4; }
+
+body.light-theme ::-webkit-scrollbar-track { background: #eceef2; }
+body.light-theme ::-webkit-scrollbar-thumb { background: #b8bfca; border-radius: 10px; }
+body.light-theme ::-webkit-scrollbar-thumb:hover { background: #9aa2ae; }
+
+.action-btn:hover {
+    background: #333;
+    border-color: #2ecc71;
+    color: #2ecc71;
+}

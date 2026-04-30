@@ -1,0 +1,23 @@
+.admin-body { background-color: #f4f7f6; color: #0f172a; margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+.admin-layout { display: flex; min-height: 100vh; }
+.admin-sidebar { width: 260px; background-color: #1e293b; color: #cbd5e1; display: flex; flex-direction: column; }
+.admin-sidebar-header { padding: 20px; border-bottom: 1px solid #334155; }
+.admin-sidebar-header h2 { color: #fff; margin: 0 0 10px 0; font-size: 1.2rem; }
+.admin-role-badge { background: #2563eb; color: #fff; font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+.admin-nav { padding: 20px 10px; }
+.admin-nav-title { font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; margin: 15px 0 5px 10px; }
+.admin-nav-btn { width: 100%; text-align: left; background: transparent; border: none; color: #cbd5e1; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 0.95rem; margin-bottom: 5px; }
+.admin-nav-btn:hover { background: #334155; color: #fff; }
+.admin-nav-btn.active { background: #2563eb; color: #fff; }
+.admin-content { flex: 1; padding: 40px; }
+.admin-section { display: none; }
+.admin-section.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.admin-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); max-width: 600px; }
+.admin-card h3 { margin-top: 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; }
+.admin-form-group { margin-bottom: 15px; }
+.admin-form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; }
+.admin-form-group input, .admin-form-group select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px; box-sizing: border-box; }
+.admin-btn { background: #2563eb; color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+.admin-btn:hover { background: #1d4ed8; }
+.back-to-editor { display: inline-block; margin-bottom: 20px; color: #2563eb; text-decoration: none; font-weight: bold; }

@@ -1,0 +1,13 @@
+Django==5.2.13
+asgiref==3.11.1
+sqlparse==0.5.5
+tzdata==2024.2
+
+pandas==2.2.3
+numpy==2.1.1
+python-dateutil==2.9.0.post0
+pytz==2024.2
+six==1.16.0
+
+openpyxl==3.1.5
+et-xmlfile==2.0.0

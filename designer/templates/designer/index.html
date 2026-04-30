@@ -1,0 +1,783 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>VoltStream Designer | Рабочая область</title>
+    <link rel="stylesheet" href="{% static 'designer/css/style.css' %}?v=3">
+    <style>
+        /* Дополнительные стили для отсутствующих элементов */
+        .line-path {
+            fill: none;
+            stroke: #3498db;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            transition: stroke 0.2s;
+        }
+
+        .line-path.selected {
+            stroke: #f39c12;
+            stroke-width: 3;
+        }
+
+        .line-handle {
+            fill: #f39c12;
+            stroke: #fff;
+            stroke-width: 1.5;
+            cursor: move;
+            transition: r 0.2s;
+        }
+
+        .line-handle:hover, .line-handle.active {
+            r: 8;
+            fill: #e67e22;
+        }
+
+        .drawing-line {
+            fill: none;
+            stroke: #2ecc71;
+            stroke-width: 2;
+            stroke-dasharray: 5,5;
+        }
+
+        .node.can-attach circle {
+            stroke: #2ecc71;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 5px #2ecc71);
+        }
+
+        .btn-unlink {
+            background: #c0392b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .btn-unlink:hover:not(:disabled) {
+            background: #e74c3c;
+        }
+
+        .btn-unlink:disabled {
+            background: #555;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-group .tool-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        /* --- СТИЛИ ДЛЯ ОБНОВЛЕННОЙ ВЕРХНЕЙ ПАНЕЛИ --- */
+        .toolbar-divider {
+            width: 2px;
+            height: 35px;
+            background: #333;
+            margin: 0 10px;
+            border-radius: 1px;
+        }
+
+        .toolbar-group-label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            margin-right: -5px;
+            cursor: help;
+        }
+
+        .catalog-tool-btn {
+            background: #2c3e50 !important;
+            border: 1px solid #34495e !important;
+            color: #ecf0f1 !important;
+        }
+
+        .catalog-tool-btn:hover {
+            background: #34495e !important;
+            border-color: #3498db !important;
+        }
+
+        /* Адаптация класса lib-item для верхней панели */
+        #toolbar .lib-item {
+            margin: 0;
+            padding: 10px 18px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            cursor: grab;
+            background: #27ae60;
+            border: none;
+            color: white;
+        }
+        #toolbar .lib-item:hover { background: #2ecc71; }
+        #toolbar .lib-item:active { cursor: grabbing; }
+
+        /* --- НОВЫЕ СТИЛИ ДЛЯ КАРТИНОК И ФОЛБЭКОВ --- */
+        .node { cursor: move; }
+        image.selected { filter: drop-shadow(0 0 8px #f1c40f) drop-shadow(0 0 2px #f1c40f); }
+        image.can-attach { filter: drop-shadow(0 0 8px #2ecc71) drop-shadow(0 0 2px #2ecc71); }
+        circle.selected { stroke: #f1c40f !important; stroke-width: 5; }
+        circle.can-attach { stroke: #2ecc71 !important; stroke-width: 6; filter: drop-shadow(0 0 5px #2ecc71); }
+
+        /* --- СТИЛИ ДЕРЕВА ПРОЕКТОВ (ЛЕВАЯ ПАНЕЛЬ) --- */
+        .tree-container { font-size: 13px; color: var(--text-main); margin-top: 10px; }
+        .tree-details { margin-left: 10px; border-left: 1px dashed #444; padding-left: 10px; margin-top: 5px; }
+        .tree-details[open] > summary { color: var(--accent); font-weight: bold; }
+        .tree-summary { cursor: pointer; padding: 6px 0; outline: none; user-select: none; transition: color 0.2s; list-style: none; display: flex; align-items: center; gap: 8px; }
+        .tree-summary::-webkit-details-marker { display: none; } /* Скрываем стандартный треугольник */
+        .tree-summary:hover { color: var(--accent); }
+        .tree-summary::before { content: '▶'; font-size: 10px; color: #888; transition: transform 0.2s; }
+        .tree-details[open] > .tree-summary::before { transform: rotate(90deg); }
+
+        .tree-file { margin-left: 20px; padding: 8px 10px; color: #ccc; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; border-radius: 4px; margin-top: 2px;}
+        .tree-file:hover { color: #fff; background: rgba(46, 204, 113, 0.15); }
+        .tree-file.active { background: rgba(46, 204, 113, 0.3); border: 1px solid var(--accent); color: #fff; }
+    </style>
+</head>
+<body>
+
+<div id="toolbar">
+    <span class="toolbar-group-label" title="Базовые инструменты для работы с элементами на холсте">Инструменты:</span>
+    <button class="tool-btn active" id="btn-SELECT" onclick="setMode('SELECT')" title="Режим выбора: позволяет выделять объекты, перемещать их и редактировать свойства">🖱️ Выбор</button>
+    <button class="tool-btn" id="btn-TEXT" onclick="setMode('TEXT')" title="Текст: позволяет добавить текстовую подпись в любое место на схеме">📝 Текст</button>
+    <button class="tool-btn" onclick="undo()" style="margin-left: 10px;" title="Отменить последнее совершенное действие на холсте">↩️ Назад</button>
+
+    <div class="toolbar-divider"></div>
+
+    <span class="toolbar-group-label" title="Перетащите базовый объект на рабочую область">Формы:</span>
+    <button class="tool-btn lib-item" draggable="true" data-type="Опора" title="Зажмите левую кнопку мыши и перетащите опору на схему">🗼 Опора</button>
+
+    <div class="toolbar-divider"></div>
+
+    <span class="toolbar-group-label" title="Справочники базы данных для поиска и добавления готового оборудования на схему">Каталоги БД:</span>
+    <button class="tool-btn catalog-tool-btn" onclick="window.openCatalogModal('ТП', 'Трансформаторы')" title="Открыть справочник Трансформаторных Подстанций (ТП) для добавления на схему">📖 ТП</button>
+    <button class="tool-btn catalog-tool-btn" onclick="window.openCatalogModal('ЛЭП', 'ЛЭП')" title="Открыть справочник Линий Электропередач (ЛЭП) для выбора марки кабеля">📖 ЛЭП</button>
+    <button class="tool-btn catalog-tool-btn" onclick="window.openCatalogModal('Абонент', 'Потребители')" title="Открыть справочник Абонентов (Потребителей) для добавления на схему">📖 Абоненты</button>
+
+    <div class="toolbar-divider" style="margin-left: auto;"></div>
+
+    <a href="{% if can_access_admin %}{% url 'admin_panel' %}{% else %}#{% endif %}" id="btn-admin-panel" class="tool-btn" style="text-decoration: none; background: #8e44ad; color: white;" title="Перейти в панель администратора для управления пользователями и организациями" onclick="handleAdminPanelClick(event)">⚙️ Админка</a>
+    <button class="tool-btn" id="btn-theme-toggle" onclick="toggleTheme()" title="Переключить между тёмной и светлой темой">🌙 Тёмная</button>
+    <button class="tool-btn btn-save" onclick="openSaveModal()" title="Сохранить текущую топологию и настройки в базу данных">💾 Сохранить</button>
+</div>
+
+<div id="main-container">
+    <div id="sidebar-left" style="width: 280px; overflow-y: auto;">
+        <h4 style="color: var(--accent); margin-top: 0; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--border);">Реестр сетей</h4>
+
+        <div class="tree-container" id="project-tree-root">
+            <div style="color:#888; font-size:12px; padding: 10px;">Загрузка реестра с сервера...</div>
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <div id="user-context-bar" style="position:absolute; top:10px; right:18px; z-index:5; display:flex; gap:8px; align-items:center; pointer-events:none;">
+            <span style="background: rgba(0,0,0,0.55); color:#ddd; padding:5px 10px; border-radius:14px; font-size:11px; pointer-events:auto;">
+                {% if is_super %}🛡️ Супер-Админ — глобальный доступ
+                {% elif current_org_name %}🏢 {{ current_org_name }}
+                {% else %}— организация не задана —{% endif %}
+            </span>
+        </div>
+        <svg id="scene">
+            <defs>
+                <pattern id="smallGrid" width="10" height="10" patternUnits="userSpaceOnUse">
+                    <path id="smallGridPath" d="M 10 0 L 0 0 0 10" fill="none" stroke="#1a1a1a" stroke-width="1" stroke-opacity="0" />
+                </pattern>
+                <pattern id="gridPattern" width="50" height="50" patternUnits="userSpaceOnUse">
+                    <rect width="50" height="50" fill="url(#smallGrid)" />
+                    <path id="majorGridPath" d="M 50 0 L 0 0 0 50" fill="none" stroke="#222222" stroke-width="1.5"/>
+                </pattern>
+            </defs>
+            <g id="viewport">
+                <rect x="-50000" y="-50000" width="100000" height="100000" fill="url(#gridPattern)" />
+                <g id="lines-layer"></g>
+                <g id="preview-layer"></g>
+                <g id="nodes-layer"></g>
+                <g id="handles-layer"></g>
+                <rect id="selection-rect"></rect>
+            </g>
+        </svg>
+        <div id="context-menu">
+            <div class="menu-item danger" onclick="deleteSelected()">Удалить объект</div>
+        </div>
+    </div>
+
+    <div id="sidebar-right">
+        <h4 id="props-title" style="color: var(--accent); margin-top: 0;">Свойства</h4>
+
+        <div class="prop-group">
+            <label id="lbl-name">Наименование</label>
+            <input type="text" id="prop-name" oninput="updateNodeName(this.value)">
+        </div>
+
+        <div id="dynamic-props-container"></div>
+
+        <div id="transformer-props" style="display:none;">
+            <div class="prop-group">
+                <label>Тип трансформатора</label>
+                <input type="text" id="trans-type-name" readonly style="background: #242424;">
+            </div>
+            <div class="prop-group">
+                <label>ID в БД</label>
+                <input type="text" id="trans-db-id" readonly style="background: #242424;">
+            </div>
+            <div class="prop-group">
+                <label>Номинальная мощность, кВА</label>
+                <input type="number" step="0.01" id="trans-nominal-power" oninput="updateNodeParam('nominal_power', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Потери ХХ, кВт</label>
+                <input type="number" step="0.001" id="trans-losses-xx" oninput="updateNodeParam('losses_no_load', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Потери КЗ, кВт</label>
+                <input type="number" step="0.001" id="trans-losses-kz" oninput="updateNodeParam('losses_short_circuit', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Напряжение ВН, кВ</label>
+                <input type="number" step="0.01" id="trans-voltage-hv" oninput="updateNodeParam('voltage_hv', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Напряжение НН, кВ</label>
+                <input type="number" step="0.01" id="trans-voltage-lv" oninput="updateNodeParam('voltage_lv', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Напряжение КЗ, %</label>
+                <input type="number" step="0.01" id="trans-voltage-kz" oninput="updateNodeParam('voltage_short_circuit_pct', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Количество ступеней ПБВ</label>
+                <input type="number" id="trans-pbv-stages" oninput="updateNodeParam('pbv_stages_count', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Шаг ступени ПБВ, %</label>
+                <input type="number" step="0.01" id="trans-pbv-step" oninput="updateNodeParam('pbv_step_pct', this.value)">
+            </div>
+        </div>
+
+        <div id="consumer-props" style="display:none;">
+            <div class="prop-group">
+                <label>Тип потребителя</label>
+                <input type="text" id="consumer-type-name" readonly style="background: #242424;">
+            </div>
+            <div class="prop-group">
+                <label>ID в БД</label>
+                <input type="text" id="consumer-db-id" readonly style="background: #242424;">
+            </div>
+            <div class="prop-group">
+                <label>Характер электропотребления</label>
+                <input type="text" id="consumer-usage" oninput="updateNodeParam('usage_character', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Адрес потребителя</label>
+                <input type="text" id="consumer-address" oninput="updateNodeParam('address', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Дополнительные данные</label>
+                <input type="text" id="consumer-extra" oninput="updateNodeParam('additional_data', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Питание потребителя</label>
+                <select id="consumer-supply" onchange="updateNodeParam('supply_type', this.value)">
+                    <option value="">-- Выберите --</option>
+                    <option value="Однофазный">Однофазный</option>
+                    <option value="Трёхфазный">Трёхфазный</option>
+                </select>
+            </div>
+            <div class="prop-group">
+                <label>Номер фазы</label>
+                <input type="number" id="consumer-phase" oninput="updateNodeParam('phase_number', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Параметры электропотребления (тип)</label>
+                <select id="consumer-calc-method" onchange="updateNodeParam('calc_method', this.value)">
+                    <option value="">-- Выберите --</option>
+                    <option value="Типовые">Типовые</option>
+                    <option value="Индивидуальные">Индивидуальные</option>
+                </select>
+            </div>
+            <div class="prop-group">
+                <label>Годовое потребление, кВт*ч</label>
+                <input type="number" step="0.01" id="consumer-yearly" oninput="updateNodeParam('yearly_consumption_kwh', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Расчётная активная мощность, кВт</label>
+                <input type="number" step="0.0001" id="consumer-power" oninput="updateNodeParam('calculated_active_power_kw', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Коэффициент мощности (cos φ)</label>
+                <input type="number" step="0.0001" id="consumer-cosphi" oninput="updateNodeParam('cos_phi', this.value)">
+            </div>
+        </div>
+
+        <div id="pole-props" style="display:none;">
+            <div class="prop-group">
+                <label>Тип</label>
+                <input type="text" id="pole-type" value="Опора" readonly style="background: #242424;">
+            </div>
+            <div class="prop-group">
+                <label>Количество ответвлений (макс 10)</label>
+                <input type="number" id="pole-branches" min="0" max="10" oninput="updateNodeParam('branches_count', this.value)">
+                <small style="color: #888; font-size: 10px;">Максимум 10 ответвлений</small>
+            </div>
+            <div class="prop-group" id="connections-info" style="background: #1a1a1a; padding: 10px; border-radius: 6px;">
+                <label style="color: var(--accent);">Подключения</label>
+                <div id="connections-list" style="font-size: 12px; color: #aaa;"></div>
+            </div>
+        </div>
+
+        <div id="line-props" style="display:none;">
+            <div class="prop-group">
+                <label>Марка ЛЭП</label>
+                <input type="text" id="prop-mark" oninput="updateLineParam('mark', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Материал провода</label>
+                <input type="text" id="prop-material" oninput="updateLineParam('material', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Материал изоляции</label>
+                <input type="text" id="prop-insulation" oninput="updateLineParam('insulation', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Количество жил</label>
+                <input type="number" id="prop-cores" oninput="updateLineParam('cores_count', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Сечение фазного провода, мм²</label>
+                <input type="number" step="0.01" id="prop-cross-section" oninput="updateLineParam('cross_section', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Сопротивление фазного, Ом/км</label>
+                <input type="number" step="0.0001" id="prop-r-phase" oninput="updateLineParam('r_phase_ohm_km', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Сопротивление нулевого, Ом/км</label>
+                <input type="number" step="0.0001" id="prop-r-null" oninput="updateLineParam('r_null_ohm_km', this.value)">
+            </div>
+            <div class="prop-group">
+                <label>Сопротивление доп. провода, Ом/км</label>
+                <input type="number" step="0.0001" id="prop-r-add" oninput="updateLineParam('r_add_ohm_km', this.value)">
+            </div>
+
+            <div class="btn-group">
+                <button id="btn-unlink-start" onclick="modifyLink('start')" class="tool-btn btn-unlink">🔗 Отвязать начало</button>
+                <button id="btn-unlink-end" onclick="modifyLink('end')" class="tool-btn btn-unlink">🔗 Отвязать конец</button>
+            </div>
+        </div>
+
+        <div id="text-props" style="display:none;">
+            <div class="prop-group">
+                <label>Размер шрифта</label>
+                <input type="number" id="prop-text-size" oninput="updateTextSize(this.value)" min="10" max="100">
+            </div>
+        </div>
+
+        <div id="point-editor" style="display:none; background: #1e1e1e; padding: 15px; border-radius: 6px; margin-top: 15px;">
+            <label style="color: var(--accent);">Координаты точки</label>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;"><span style="color:var(--text-sec);font-size:10px;">X:</span> <input type="number" id="prop-pt-x" onchange="manualMovePoint()"></div>
+                <div style="flex: 1;"><span style="color:var(--text-sec);font-size:10px;">Y:</span> <input type="number" id="prop-pt-y" onchange="manualMovePoint()"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="save-modal-overlay" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;">
+    <div class="modal-content" style="background: var(--bg-secondary); padding: 25px; border-radius: 8px; width: 420px; border: 1px solid var(--border);">
+        <h3 style="margin-top:0; color: var(--accent);">Сохранить схему</h3>
+        <div class="prop-group" style="margin-bottom: 15px;">
+            <label>Название схемы</label>
+            <input type="text" id="save-scheme-name" class="form-input" style="width:100%; background:#1a1a1a; color:white; border:1px solid #444; padding:8px;" placeholder="Например: Фидер №5 Барыкина">
+        </div>
+        <div class="prop-group" style="margin-bottom: 15px;" id="save-scheme-org-group">
+            <label>Организация</label>
+            <select id="save-scheme-org" class="form-select" style="width:100%; background:#1a1a1a; color:white; border:1px solid #444; padding:8px;">
+                {% if is_super %}
+                    <option value="">— Общая (без организации) —</option>
+                {% endif %}
+                {% for org in organizations %}
+                    <option value="{{ org.id }}"{% if current_org_id == org.id %} selected{% endif %}>{{ org.name }}</option>
+                {% endfor %}
+            </select>
+            {% if not is_super %}
+            <small style="color:#888; font-size:11px;">Сохранение возможно только в вашу организацию.</small>
+            {% endif %}
+        </div>
+        <div class="prop-group" style="margin-bottom: 20px;">
+            <label>Выберите папку (улицу/район)</label>
+            <select id="save-scheme-folder" class="form-select" style="width:100%; background:#1a1a1a; color:white; border:1px solid #444; padding:8px;">
+                </select>
+        </div>
+        <div style="display:flex; gap:10px; justify-content: flex-end;">
+            <button class="btn-secondary" onclick="closeSaveModal()" style="padding:8px 15px; cursor:pointer; background:#333; color:white; border:none; border-radius:4px;">Отмена</button>
+            <button class="btn-primary" onclick="confirmSaveToServer()" style="padding:8px 15px; background:var(--accent); color:black; border:none; border-radius:4px; cursor:pointer;">Сохранить</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.VoltStreamCtx = {
+        isSuperuser: {% if is_super %}true{% else %}false{% endif %},
+        canAccessAdmin: {% if can_access_admin %}true{% else %}false{% endif %},
+        currentOrgId: {% if current_org_id %}{{ current_org_id }}{% else %}null{% endif %},
+    };
+
+    window.handleAdminPanelClick = function(event) {
+        if (!window.VoltStreamCtx.canAccessAdmin) {
+            event.preventDefault();
+            const overlay = document.getElementById('no-access-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+                requestAnimationFrame(() => overlay.classList.add('is-open'));
+            }
+        }
+    };
+
+    window.closeNoAccessModal = function() {
+        const overlay = document.getElementById('no-access-overlay');
+        if (!overlay) return;
+        overlay.classList.remove('is-open');
+        setTimeout(() => { overlay.style.display = 'none'; }, 200);
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const overlay = document.getElementById('no-access-overlay');
+            if (overlay && overlay.classList.contains('is-open')) {
+                window.closeNoAccessModal();
+            }
+        }
+    });
+</script>
+
+<style>
+    #no-access-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 10, 10, 0.72);
+        backdrop-filter: blur(6px);
+        z-index: 3000;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+    #no-access-overlay.is-open { opacity: 1; }
+    #no-access-overlay .no-access-card {
+        background: #242424;
+        color: #e0e0e0;
+        border: 1px solid #404040;
+        border-radius: 12px;
+        max-width: 420px;
+        width: calc(100% - 32px);
+        padding: 2rem 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,82,82,0.15);
+        transform: translateY(8px) scale(0.98);
+        transition: transform 0.22s ease;
+    }
+    #no-access-overlay.is-open .no-access-card { transform: translateY(0) scale(1); }
+    #no-access-overlay .no-access-icon {
+        width: 64px;
+        height: 64px;
+        margin: 0 auto 1rem;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #ff7b7b, #c62828);
+        box-shadow: 0 0 24px rgba(255, 82, 82, 0.45);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+    }
+    #no-access-overlay h2 {
+        margin: 0 0 0.5rem;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: #ff5252;
+        letter-spacing: 0.01em;
+    }
+    #no-access-overlay p {
+        margin: 0 0 1.5rem;
+        color: #b6b6b6;
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    #no-access-overlay .no-access-btn {
+        background: #ff5252;
+        color: #fff;
+        border: none;
+        padding: 0.7rem 1.6rem;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: background 0.2s, transform 0.1s;
+        letter-spacing: 0.02em;
+    }
+    #no-access-overlay .no-access-btn:hover { background: #e74c3c; transform: translateY(-1px); }
+    #no-access-overlay .no-access-btn:active { transform: translateY(0); }
+    body.light-theme #no-access-overlay .no-access-card {
+        background: #ffffff;
+        color: #1a1a1a;
+        border-color: #e1e3ea;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.18), 0 0 0 1px rgba(231, 76, 60, 0.12);
+    }
+    body.light-theme #no-access-overlay p { color: #5a6270; }
+</style>
+
+<div id="no-access-overlay" onclick="if(event.target === this) closeNoAccessModal()">
+    <div class="no-access-card" role="dialog" aria-modal="true" aria-labelledby="no-access-title">
+        <div class="no-access-icon">🚫</div>
+        <h2 id="no-access-title">Доступ запрещён</h2>
+        <p>У вас нет прав для входа в административную панель. Обратитесь к администратору вашей организации, если считаете, что это ошибка.</p>
+        <button type="button" class="no-access-btn" onclick="closeNoAccessModal()">Понятно</button>
+    </div>
+</div>
+
+<div id="modal-overlay" class="modal-overlay" onclick="if(event.target === this) closeModal()">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">✕</span>
+        <h3 style="margin-top:0; color: var(--accent);">Выберите версию схемы</h3>
+        <div id="revisions-list-inner" class="rev-list"></div>
+    </div>
+</div>
+
+{% include 'designer/catalog_modal.html' %}
+
+<!-- Модульная структура фронтенда — порядок загрузки важен -->
+<script src="{% static 'designer/js/state.js' %}?v=1"></script>
+<script src="{% static 'designer/js/api.js' %}?v=1"></script>
+<script src="{% static 'designer/js/canvas.js' %}?v=1"></script>
+<script src="{% static 'designer/js/nodes.js' %}?v=1"></script>
+<script src="{% static 'designer/js/lines.js' %}?v=1"></script>
+<script src="{% static 'designer/js/properties.js' %}?v=1"></script>
+<script src="{% static 'designer/js/catalog.js' %}?v=1"></script>
+<script src="{% static 'designer/js/main.js' %}?v=1"></script>
+
+<script>
+    // --- ПРЕДОПРЕДЕЛЕННАЯ СТРУКТУРА БЕЛАРУСИ (FALLBACK) ---
+    const BELARUS_BASE_STRUCTURE = [
+        {id: 1001, name: "Брестская область", parent_id: null},
+        {id: 1002, name: "г. Брест", parent_id: 1001},
+        {id: 1003, name: "Витебская область", parent_id: null},
+        {id: 1004, name: "г. Витебск", parent_id: 1003},
+        {id: 1005, name: "Гомельская область", parent_id: null},
+        {id: 1006, name: "г. Гомель", parent_id: 1005},
+        {id: 1007, name: "Железнодорожный район", parent_id: 1006},
+        {id: 1008, name: "Новобелицкий район", parent_id: 1006},
+        {id: 1009, name: "Советский район", parent_id: 1006},
+        {id: 1010, name: "Центральный район", parent_id: 1006},
+        {id: 1011, name: "г. Мозырь", parent_id: 1005},
+        {id: 1012, name: "г. Жлобин", parent_id: 1005},
+        {id: 1013, name: "г. Речица", parent_id: 1005},
+        {id: 1014, name: "г. Светлогорск", parent_id: 1005},
+        {id: 1015, name: "г. Калинковичи", parent_id: 1005},
+        {id: 1016, name: "г. Рогачев", parent_id: 1005},
+        {id: 1017, name: "г. Добруш", parent_id: 1005},
+        {id: 1018, name: "г. Хойники", parent_id: 1005},
+        {id: 1019, name: "Гродненская область", parent_id: null},
+        {id: 1020, name: "г. Гродно", parent_id: 1019},
+        {id: 1021, name: "Минская область", parent_id: null},
+        {id: 1022, name: "г. Минск", parent_id: 1021},
+        {id: 1023, name: "Могилевская область", parent_id: null},
+        {id: 1024, name: "г. Могилев", parent_id: 1023}
+    ];
+
+    // --- ЛОГИКА ДИНАМИЧЕСКОГО ДЕРЕВА РЕЕСТРА ---
+    let currentFolders = [];
+    let currentSchemes = [];
+
+    function loadDesignerRegistry() {
+        fetch('/api/registry/')
+            .then(res => {
+                if (!res.ok) throw new Error("API error");
+                return res.json();
+            })
+            .then(data => {
+                if (data.status === 'success' && data.folders) {
+                    currentFolders = data.folders;
+                    currentSchemes = data.schemes || [];
+                    renderTree('project-tree-root', currentFolders, currentSchemes);
+                    populateFolderSelect();
+                } else {
+                    throw new Error("База пуста");
+                }
+            })
+            .catch(err => {
+                // FALLBACK: Используем предопределенную базу РБ + localStorage
+                const storedFolders = localStorage.getItem('voltstream_registry_folders');
+                const localFolders = storedFolders ? JSON.parse(storedFolders) : [];
+
+                // Объединяем базу РБ и пользовательские папки
+                const combinedFolders = [...BELARUS_BASE_STRUCTURE];
+                localFolders.forEach(lf => {
+                    if (!combinedFolders.some(cf => cf.id === lf.id)) {
+                        combinedFolders.push(lf);
+                    }
+                });
+
+                currentFolders = combinedFolders;
+                renderTree('project-tree-root', currentFolders, []);
+                populateFolderSelect();
+            });
+    }
+
+    function renderTree(containerId, folders, schemes) {
+        const container = document.getElementById(containerId);
+        if (!folders || folders.length === 0) return;
+
+        const folderMap = {};
+        folders.forEach(f => folderMap[f.id] = { ...f, children: [], schemes: [] });
+
+        if (schemes) {
+            schemes.forEach(s => {
+                if (folderMap[s.folder_id]) folderMap[s.folder_id].schemes.push(s);
+            });
+        }
+
+        const rootFolders = [];
+        folders.forEach(f => {
+            if (f.parent_id && folderMap[f.parent_id]) {
+                folderMap[f.parent_id].children.push(folderMap[f.id]);
+            } else {
+                rootFolders.push(folderMap[f.id]);
+            }
+        });
+
+        function generateHTML(node) {
+            const isOpen = (node.name === "Гомельская область" || node.name === "г. Гомель") ? 'open' : '';
+            let html = `<details class="tree-details" ${isOpen}><summary class="tree-summary">📁 ${node.name}</summary>`;
+
+            if (node.children.length === 0 && node.schemes.length === 0) {
+                html += `<div style="margin-left: 20px; font-size: 11px; color: #666; font-style: italic;">Пусто</div>`;
+            } else {
+                node.children.forEach(child => html += generateHTML(child));
+                node.schemes.forEach(scheme => {
+                    html += `<div class="tree-file" onclick="loadSchemeById(${scheme.id}, this)" title="Открыть эту схему">📄 ${scheme.name}</div>`;
+                });
+            }
+            html += `</details>`;
+            return html;
+        }
+
+        let finalHTML = '';
+        rootFolders.forEach(root => finalHTML += generateHTML(root));
+        container.innerHTML = finalHTML;
+    }
+
+    function populateFolderSelect() {
+        const select = document.getElementById('save-scheme-folder');
+        if (!select) return;
+        const ctx = window.VoltStreamCtx || {};
+        const selectedOrg = (function() {
+            const orgSel = document.getElementById('save-scheme-org');
+            if (!orgSel) return ctx.currentOrgId;
+            const v = orgSel.value;
+            return v === '' ? null : parseInt(v, 10);
+        })();
+
+        const folders = currentFolders.filter(f => {
+            if (!f.org_id) return true;
+            if (ctx.isSuperuser) {
+                return selectedOrg ? f.org_id === selectedOrg : true;
+            }
+            return f.org_id === ctx.currentOrgId;
+        });
+        select.innerHTML = folders.map(f => {
+            const tag = f.org_id ? '' : ' [общая]';
+            return `<option value="${f.id}">${f.name}${tag}</option>`;
+        }).join('');
+    }
+
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'save-scheme-org') {
+            populateFolderSelect();
+        }
+    });
+
+    window.openSaveModal = function() {
+        document.getElementById('save-modal-overlay').style.display = 'flex';
+    };
+
+    window.closeSaveModal = function() {
+        document.getElementById('save-modal-overlay').style.display = 'none';
+    };
+
+    window.confirmSaveToServer = function() {
+        const name = document.getElementById('save-scheme-name').value;
+        const folderId = document.getElementById('save-scheme-folder').value;
+        const orgSel = document.getElementById('save-scheme-org');
+        const orgValue = orgSel ? orgSel.value : '';
+        const orgId = orgValue === '' ? null : parseInt(orgValue, 10);
+        if(!name) return alert("Введите название схемы");
+
+        if (window.saveToServerWithParams) {
+            window.saveToServerWithParams(name, folderId, orgId);
+        }
+        closeSaveModal();
+    };
+
+    window.loadSchemeById = function(schemeId, element) {
+        document.querySelectorAll('.tree-file').forEach(el => el.classList.remove('active'));
+        if(element) element.classList.add('active');
+
+        fetch(`/api/load_scheme_by_id/${schemeId}/`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 'success') {
+                    if (window.loadTopologyData) {
+                        window.loadTopologyData(data.topology_data);
+                    }
+                    window.currentLoadedSchemeId = schemeId;
+                } else {
+                    alert("Ошибка загрузки: " + data.message);
+                }
+            });
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDesignerRegistry();
+        if (typeof window.closeModal === 'undefined') { window.closeModal = function() { document.getElementById('modal-overlay').style.display = 'none'; }; }
+        if (typeof window.openLoadModal === 'undefined') { window.openLoadModal = function() { document.getElementById('modal-overlay').style.display = 'flex'; }; }
+        const dragItems = document.querySelectorAll('.lib-item[data-type]');
+        dragItems.forEach(item => { item.setAttribute('draggable', 'true'); });
+        applyStoredTheme();
+    });
+
+    // --- ПЕРЕКЛЮЧЕНИЕ ТЕМЫ ---
+    function applyStoredTheme() {
+        const stored = localStorage.getItem('voltstream_theme');
+        const isLight = stored === 'light';
+        document.body.classList.toggle('light-theme', isLight);
+        const btn = document.getElementById('btn-theme-toggle');
+        if (btn) btn.innerHTML = isLight ? '☀️ Светлая' : '🌙 Тёмная';
+    }
+
+    window.toggleTheme = function() {
+        const isLight = document.body.classList.toggle('light-theme');
+        localStorage.setItem('voltstream_theme', isLight ? 'light' : 'dark');
+        const btn = document.getElementById('btn-theme-toggle');
+        if (btn) btn.innerHTML = isLight ? '☀️ Светлая' : '🌙 Тёмная';
+    };
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'voltstream_theme') applyStoredTheme();
+    });
+</script>
+
+</body>
+</html>
