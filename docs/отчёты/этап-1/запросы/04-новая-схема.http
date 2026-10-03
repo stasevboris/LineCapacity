@@ -1,0 +1,27 @@
+POST http://127.0.0.1:8000/api/scheme/apply
+Content-Type: application/json
+
+{
+  "action": {
+    "kind": "new",
+    "transformer": {
+      "type_name": "ТМ-160",
+      "label": "Т1 КТП-17",
+      "sn_kva": 160,
+      "px_kw": 0.51,
+      "pk_kw": 2.65,
+      "uk_percent": 4.5
+    },
+    "line": {
+      "type_name": "А 35",
+      "label": "Л-1",
+      "length_m": 40,
+      "r_phase_ohm_per_km": 0.868,
+      "r_neutral_ohm_per_km": 0.868
+    },
+    "pole": {
+      "label": "1",
+      "branch_count": 2
+    }
+  }
+}

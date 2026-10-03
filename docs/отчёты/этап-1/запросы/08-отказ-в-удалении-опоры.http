@@ -1,0 +1,156 @@
+POST http://127.0.0.1:8000/api/scheme/apply
+Content-Type: application/json
+
+{
+  "scheme": {
+    "transformer": {
+      "type_name": "ТМ-160",
+      "label": "Т1 КТП-17",
+      "x": 50,
+      "y": 40,
+      "h": 5467,
+      "sn_kva": 160.0,
+      "px_kw": 0.51,
+      "pk_kw": 2.65,
+      "unn_kv": 0.4,
+      "uvn_kv": 10.0,
+      "uk_percent": 4.5,
+      "pbv_step": 0,
+      "pbv_steps": 5,
+      "pbv_percent": 2.5,
+      "r_ohm": 0.0165625,
+      "x_ohm": 0.04184117103703002,
+      "kt": 25.0
+    },
+    "lines": [
+      {
+        "type_name": "А 35",
+        "label": "Л-1",
+        "x": 53,
+        "y": 70,
+        "end_x": 133,
+        "end_y": 70,
+        "vertical": 0,
+        "line_type": 0,
+        "phase_mode": 0,
+        "length_m": 40.0,
+        "canvas_length": 80,
+        "r_phase_ohm_per_km": 0.868,
+        "r_neutral_ohm_per_km": 0.868,
+        "r_single_phase_ohm_per_km": 1.8,
+        "phase_no": 1,
+        "r_phase_ohm": 0.03472,
+        "r_neutral_ohm": 0.03472,
+        "feeder_no": 0
+      },
+      {
+        "type_name": "СИП-4 2х16",
+        "label": "Л-2",
+        "x": 163,
+        "y": 70,
+        "end_x": 163,
+        "end_y": 140,
+        "vertical": 1,
+        "line_type": 3,
+        "phase_mode": 1,
+        "length_m": 25.0,
+        "canvas_length": 70,
+        "r_phase_ohm_per_km": 1.8,
+        "r_neutral_ohm_per_km": 1.8,
+        "r_single_phase_ohm_per_km": 1.91,
+        "phase_no": 2,
+        "r_phase_ohm": 0.04775,
+        "r_neutral_ohm": 0.04775,
+        "feeder_no": 0
+      }
+    ],
+    "poles": [
+      {
+        "label": "1",
+        "x": 133,
+        "y": 70,
+        "end_x": 223,
+        "end_y": 70,
+        "canvas_length": 90,
+        "branch_count": 2,
+        "current_branch_no": 1,
+        "feeder_no": 0
+      }
+    ],
+    "consumers": [
+      {
+        "type_text": "мощность по ТУ: 3,5 кВт",
+        "label": "1",
+        "address": "ул. Лесная, 1",
+        "x": 163,
+        "y": 140,
+        "p_kw": 0.35,
+        "cos_phi": 0.998,
+        "phase_mode": 1,
+        "phase_no": 2,
+        "load_type": 0,
+        "annual_kwh": 1500.0,
+        "category": 0.0,
+        "feeder_no": 0
+      }
+    ],
+    "connection_points": [
+      {
+        "x": 133,
+        "y": 70,
+        "active": false,
+        "point_kind": 1,
+        "object_no": 0,
+        "branch_no": 0,
+        "feeder_no": 0
+      },
+      {
+        "x": 163,
+        "y": 70,
+        "active": false,
+        "point_kind": 2,
+        "object_no": 0,
+        "branch_no": 1,
+        "feeder_no": 0
+      },
+      {
+        "x": 193,
+        "y": 70,
+        "active": true,
+        "point_kind": 2,
+        "object_no": 0,
+        "branch_no": 2,
+        "feeder_no": 0
+      },
+      {
+        "x": 223,
+        "y": 70,
+        "active": true,
+        "point_kind": 2,
+        "object_no": 0,
+        "branch_no": 0,
+        "feeder_no": 0
+      },
+      {
+        "x": 163,
+        "y": 140,
+        "active": false,
+        "point_kind": 6,
+        "object_no": 0,
+        "branch_no": 0,
+        "feeder_no": 0
+      }
+    ],
+    "outgoing_count": 1,
+    "spare": {
+      "lines": [],
+      "poles": [],
+      "consumers": []
+    }
+  },
+  "action": {
+    "kind": "delete",
+    "target": "pole",
+    "index": 0
+  }
+}

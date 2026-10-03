@@ -1,0 +1,206 @@
+{
+  "status": 200,
+  "body": {
+    "scheme": {
+      "transformer": {
+        "type_name": "ТМ-160",
+        "label": "T1 КТП № 158/163",
+        "x": 50,
+        "y": 40,
+        "h": 5467,
+        "sn_kva": 160.0,
+        "px_kw": 0.51,
+        "pk_kw": 2.65,
+        "unn_kv": 0.4,
+        "uvn_kv": 10.0,
+        "uk_percent": 4.5,
+        "pbv_step": 0,
+        "pbv_steps": 5,
+        "pbv_percent": 2.5,
+        "r_ohm": 0.0165625,
+        "x_ohm": 0.04184117103703,
+        "kt": 25.0
+      },
+      "lines": [
+        {
+          "type_name": "СИП-4 4х70",
+          "label": "ВЛ-3",
+          "x": 53,
+          "y": 70,
+          "end_x": 133,
+          "end_y": 70,
+          "vertical": 0,
+          "line_type": 0,
+          "phase_mode": 0,
+          "length_m": 5.0,
+          "canvas_length": 80,
+          "r_phase_ohm_per_km": 0.44,
+          "r_neutral_ohm_per_km": 0.44,
+          "r_single_phase_ohm_per_km": 1.8,
+          "phase_no": 1,
+          "r_phase_ohm": 0.0022,
+          "r_neutral_ohm": 0.0022,
+          "feeder_no": 0
+        },
+        {
+          "type_name": "4А 70",
+          "label": "ВЛ-3",
+          "x": 163,
+          "y": 70,
+          "end_x": 203,
+          "end_y": 70,
+          "vertical": 0,
+          "line_type": 1,
+          "phase_mode": 0,
+          "length_m": 33.0,
+          "canvas_length": 40,
+          "r_phase_ohm_per_km": 0.41,
+          "r_neutral_ohm_per_km": 0.41,
+          "r_single_phase_ohm_per_km": 1.8,
+          "phase_no": 1,
+          "r_phase_ohm": 0.01353,
+          "r_neutral_ohm": 0.01353,
+          "feeder_no": 0
+        },
+        {
+          "type_name": "4А-70",
+          "label": "ВЛ-3",
+          "x": 233,
+          "y": 70,
+          "end_x": 273,
+          "end_y": 70,
+          "vertical": 0,
+          "line_type": 1,
+          "phase_mode": 0,
+          "length_m": 33.0,
+          "canvas_length": 40,
+          "r_phase_ohm_per_km": 0.41,
+          "r_neutral_ohm_per_km": 0.41,
+          "r_single_phase_ohm_per_km": 1.8,
+          "phase_no": 1,
+          "r_phase_ohm": 0.01353,
+          "r_neutral_ohm": 0.01353,
+          "feeder_no": 0
+        }
+      ],
+      "poles": [
+        {
+          "label": "1",
+          "x": 133,
+          "y": 70,
+          "end_x": 163,
+          "end_y": 70,
+          "canvas_length": 30,
+          "branch_count": 0,
+          "current_branch_no": 0,
+          "feeder_no": 0
+        },
+        {
+          "label": "2",
+          "x": 203,
+          "y": 70,
+          "end_x": 233,
+          "end_y": 70,
+          "canvas_length": 30,
+          "branch_count": 0,
+          "current_branch_no": 0,
+          "feeder_no": 0
+        },
+        {
+          "label": "3",
+          "x": 273,
+          "y": 70,
+          "end_x": 303,
+          "end_y": 70,
+          "canvas_length": 30,
+          "branch_count": 0,
+          "current_branch_no": 0,
+          "feeder_no": 0
+        }
+      ],
+      "consumers": [
+        {
+          "type_text": "мощность по ТУ: 3,5 кВт",
+          "label": "д.39",
+          "address": "ул. Полевая, д.39",
+          "x": 2303,
+          "y": 110,
+          "p_kw": 0.109375,
+          "cos_phi": 0.908490452678575,
+          "phase_mode": 1,
+          "phase_no": 1,
+          "load_type": 0,
+          "annual_kwh": 1.39,
+          "category": 0.0,
+          "feeder_no": 0
+        },
+        {
+          "type_text": "мощность по ТУ: 3,5 кВт",
+          "label": "д.37",
+          "address": "ул. Полевая, д.37",
+          "x": 2203,
+          "y": 110,
+          "p_kw": 0.109375,
+          "cos_phi": 0.908490452678575,
+          "phase_mode": 1,
+          "phase_no": 3,
+          "load_type": 0,
+          "annual_kwh": 1.68,
+          "category": 0.0,
+          "feeder_no": 0
+        },
+        {
+          "type_text": "мощность по ТУ: 3,5 кВт",
+          "label": "д.35",
+          "address": "ул. Полевая, д.35",
+          "x": 2103,
+          "y": 110,
+          "p_kw": 0.109375,
+          "cos_phi": 0.908490452678575,
+          "phase_mode": 1,
+          "phase_no": 2,
+          "load_type": 0,
+          "annual_kwh": 1215.69,
+          "category": 0.0,
+          "feeder_no": 0
+        }
+      ],
+      "connection_points": [
+        {
+          "x": 133,
+          "y": 70,
+          "active": false,
+          "point_kind": 1,
+          "object_no": 0,
+          "branch_no": 0,
+          "feeder_no": 0
+        },
+        {
+          "x": 163,
+          "y": 70,
+          "active": false,
+          "point_kind": 2,
+          "object_no": 0,
+          "branch_no": 0,
+          "feeder_no": 0
+        },
+        {
+          "x": 203,
+          "y": 70,
+          "active": false,
+          "point_kind": 3,
+          "object_no": 0,
+          "branch_no": 0,
+          "feeder_no": 0
+        }
+      ],
+      "outgoing_count": 3,
+      "spare": {
+        "lines": [],
+        "poles": [],
+        "consumers": []
+      }
+    },
+    "name": "Каменка КТП158"
+  }
+}

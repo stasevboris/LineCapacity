@@ -1,0 +1,6 @@
+POST http://127.0.0.1:8000/api/scheme/form
+Content-Type: application/json
+
+{
+  "kind": "new"
+}

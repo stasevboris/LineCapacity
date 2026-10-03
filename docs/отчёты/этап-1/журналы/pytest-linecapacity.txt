@@ -1,0 +1,51 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.3, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Acer\AppData\Local\Programs\Python\Python311\python.exe
+hypothesis profile 'default'
+rootdir: C:\Users\Acer\Desktop\Учёба\7 семестр\Итог\Этап 1.1
+configfile: pyproject.toml
+plugins: anyio-3.7.1, hypothesis-6.163.0
+collecting ... collected 41 items
+
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[базовая] PASSED [  2%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[сложная] PASSED [  4%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[правка] PASSED [  7%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[умолчания] PASSED [  9%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[первая-лэп] PASSED [ 12%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[отмена] PASSED [ 14%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[отмена-отходящей] PASSED [ 17%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[отмена-новой] PASSED [ 19%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[удаление] PASSED [ 21%]
+tests/linecapacity/test_linecapacity.py::test_same_actions_give_same_file[свободные-концы] PASSED [ 24%]
+tests/linecapacity/test_linecapacity.py::test_label_edit_on_sample_matches_linecapacity PASSED [ 26%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[базовая] PASSED [ 29%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[сложная] PASSED [ 31%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[правка] PASSED [ 34%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[умолчания] PASSED [ 36%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[первая-лэп] PASSED [ 39%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[отмена] PASSED [ 41%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[отмена-отходящей] PASSED [ 43%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[отмена-новой] PASSED [ 46%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[удаление] PASSED [ 48%]
+tests/linecapacity/test_linecapacity.py::test_linecapacity_file_is_reproduced_by_voltplan[свободные-концы] PASSED [ 51%]
+tests/linecapacity/test_linecapacity.py::test_voltplan_file_opens_and_resaves_in_linecapacity[базовая] PASSED [ 53%]
+tests/linecapacity/test_linecapacity.py::test_voltplan_file_opens_and_resaves_in_linecapacity[сложная] PASSED [ 56%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Болсуны КТП №132 ВЛ 7257] PASSED [ 58%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Ботвиново ГКТП397] PASSED [ 60%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Гатское КТП179] PASSED [ 63%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Ипполитовка МТП-73] PASSED [ 65%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Каменка КТП158] PASSED [ 68%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Ковалёв Рог МТП №66 ВЛ 156] PASSED [ 70%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Новозахарполье КТП404] PASSED [ 73%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Октябрь МТП №78 ВЛ 2091] PASSED [ 75%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Подозерье] PASSED [ 78%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Покоть КТП №279 ВЛ 167] PASSED [ 80%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Р.Бартоломеевская КТП №282 ВЛ 162] PASSED [ 82%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Р.Нисимковичская КТП178] PASSED [ 85%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Ровковичи КТП244] PASSED [ 87%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Ровковичи МТП181] PASSED [ 90%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Сидоровичи КТП №147 ВЛ 162 (р)] PASSED [ 92%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Сидоровичи КТП №147 ВЛ 162] PASSED [ 95%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Сидоровичи МТП374] PASSED [ 97%]
+tests/linecapacity/test_linecapacity.py::test_samples_resave_the_same_in_both_programs[Чечерск КТП №68 ВЛ156] PASSED [100%]
+
+======================= 41 passed in 984.20s (0:16:24) ========================

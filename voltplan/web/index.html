@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoltPlan — редактор схемы</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/" aria-label="VoltPlan">
+      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
+      <span>Volt<b>Plan</b></span>
+    </a>
+    <div class="doc">
+      <input id="scheme-name" class="doc-name" value="Новая схема" maxlength="120" spellcheck="false"
+        aria-label="Название схемы">
+      <span id="dirty" class="doc-dirty" hidden>изменена</span>
+    </div>
+    <nav class="toolbar" aria-label="Файл">
+      <button id="btn-new" class="btn" title="Новая схема">Новая схема</button>
+      <button id="btn-open" class="btn" title="Открыть файл .cir (Ctrl+O)">Открыть .cir</button>
+      <button id="btn-save" class="btn btn-primary" title="Сохранить в файл .cir (Ctrl+S)">Сохранить .cir</button>
+      <input id="file-cir" type="file" accept=".cir" hidden>
+      <span class="toolbar-sep"></span>
+      <button id="btn-undo" class="btn" title="Отменить последнее действие (Ctrl+Z)" disabled>Отменить</button>
+      <span class="toolbar-sep"></span>
+      <button id="btn-calc" class="btn btn-accent" title="Запуск расчёта (F7)" disabled>Расчёт</button>
+      <button id="btn-report" class="btn" title="Основные результаты последнего расчёта" disabled>Итоги</button>
+    </nav>
+    <div class="top-right">
+      <button id="btn-theme" class="icon-btn" title="Светлая / тёмная тема" aria-label="Тема">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="work">
+    <aside class="panel panel-left" aria-label="Построение">
+      <section class="block">
+        <h2 class="block-title">Точка присоединения</h2>
+        <div id="point-info" class="point-info muted">Выберите синюю точку на схеме.</div>
+        <div id="actions" class="actions"></div>
+      </section>
+      <section class="block">
+        <h2 class="block-title">Схема</h2>
+        <dl class="stats">
+          <div><dt>Отходящих линий</dt><dd id="st-out">0</dd></div>
+          <div><dt>ЛЭП</dt><dd id="st-lines">0</dd></div>
+          <div><dt>Опор</dt><dd id="st-poles">0</dd></div>
+          <div><dt>Потребителей</dt><dd id="st-cons">0</dd></div>
+          <div><dt>Свободных точек</dt><dd id="st-free">0</dd></div>
+        </dl>
+      </section>
+      <section class="block legend">
+        <h2 class="block-title">Обозначения</h2>
+        <ul>
+          <li><i class="lg lg-bus"></i>Шины ТП</li>
+          <li><i class="lg lg-pole"></i>Опора</li>
+          <li><i class="lg lg-line"></i>ЛЭП</li>
+          <li><i class="lg lg-c3"></i>Трёхфазный потребитель</li>
+          <li><i class="lg lg-c1"></i><i class="lg lg-c2"></i><i class="lg lg-c3p"></i>Однофазный: фаза 1, 2, 3</li>
+          <li><i class="lg lg-point"></i>Свободная точка присоединения</li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="stage" id="stage">
+      <svg id="scene" xmlns="http://www.w3.org/2000/svg" aria-label="Схема сети">
+        <defs>
+          <pattern id="grid-minor" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M10 0H0V10" class="grid-minor"/>
+          </pattern>
+          <pattern id="grid-major" width="60" height="60" patternUnits="userSpaceOnUse">
+            <rect width="60" height="60" fill="url(#grid-minor)"/>
+            <path d="M60 0H0V60" class="grid-major"/>
+          </pattern>
+        </defs>
+        <g id="viewport">
+          <rect x="-20000" y="-20000" width="60000" height="60000" fill="url(#grid-major)"/>
+          <g id="layer-lines"></g>
+          <g id="layer-poles"></g>
+          <g id="layer-consumers"></g>
+          <g id="layer-labels"></g>
+          <g id="layer-results"></g>
+          <g id="layer-points"></g>
+        </g>
+      </svg>
+      <div id="empty" class="empty">
+        <h1>Схема пуста</h1>
+        <p>Создайте новую схему — трансформатор, первая отходящая линия и опора появятся сразу —
+          или откройте файл&nbsp;.cir программы LineCapacity.</p>
+        <div class="empty-actions">
+          <button id="empty-new" class="btn btn-primary">Новая схема</button>
+          <button id="empty-open" class="btn">Открыть .cir</button>
+        </div>
+      </div>
+      <div class="zoom" role="group" aria-label="Масштаб">
+        <button id="zoom-in" class="icon-btn" title="Крупнее">+</button>
+        <button id="zoom-fit" class="icon-btn" title="Показать всю схему (F4)">⤢</button>
+        <button id="zoom-out" class="icon-btn" title="Мельче">−</button>
+      </div>
+      <div id="popup" class="popup" hidden></div>
+      <div id="results-bar" class="results-bar" hidden>
+        <div class="seg" role="radiogroup" aria-label="Показать результаты">
+          <label><input type="radio" name="season" value="0">Лето</label>
+          <label><input type="radio" name="season" value="1">Зима</label>
+          <label><input type="radio" name="season" value="2">Мин. нагрузки</label>
+        </div>
+        <span id="results-verdict" class="verdict"></span>
+        <button id="btn-hide-results" class="btn btn-small" type="button">Скрыть результаты</button>
+      </div>
+      <section id="report" class="report" hidden aria-label="Основные результаты расчётов">
+        <header class="report-head">
+          <h2>Основные результаты расчётов</h2>
+          <button type="button" id="report-close" class="icon-btn" aria-label="Закрыть">✕</button>
+        </header>
+        <div id="report-body" class="report-body"></div>
+      </section>
+      <footer class="status">
+        <span id="status-hint">Колесо — масштаб, перетаскивание — перемещение полотна.</span>
+        <span id="status-zoom" class="status-zoom">100 %</span>
+      </footer>
+    </main>
+
+    <aside class="panel panel-right" aria-label="Свойства">
+      <div id="props"><p class="muted">Выберите объект на схеме, чтобы увидеть и изменить его параметры.</p></div>
+    </aside>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <form id="modal-card" class="modal-card" novalidate>
+      <header class="modal-head">
+        <h2 id="modal-title"></h2>
+        <button type="button" id="modal-close" class="icon-btn" aria-label="Закрыть">✕</button>
+      </header>
+      <div id="modal-body" class="modal-body"></div>
+      <footer class="modal-foot">
+        <span id="modal-error" class="form-error" role="alert"></span>
+        <button type="button" id="modal-cancel" class="btn">Отмена</button>
+        <button type="submit" id="modal-ok" class="btn btn-primary">Сохранить</button>
+      </footer>
+    </form>
+  </div>
+
+  <div id="picker" class="modal" hidden>
+    <div class="modal-card picker-card">
+      <header class="modal-head">
+        <h2 id="picker-title">Справочник</h2>
+        <button type="button" id="picker-close" class="icon-btn" aria-label="Закрыть">✕</button>
+      </header>
+      <input id="picker-search" class="input" placeholder="Начните вводить марку" autocomplete="off">
+      <div id="picker-list" class="picker-list" role="listbox"></div>
+      <div id="picker-count" class="muted picker-count"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div class="narrow" role="alert">
+    <h2>Нужен экран пошире</h2>
+    <p>Редактор схем рассчитан на окно шириной от 900 пикселей. Разверните окно или откройте VoltPlan на компьютере.</p>
+  </div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

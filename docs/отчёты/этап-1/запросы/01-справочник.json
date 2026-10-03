@@ -1,0 +1,72 @@
+{
+  "status": 200,
+  "body": {
+    "transformers": [
+      {
+        "type_name": "ТМ-10",
+        "sn_kva": 10.0,
+        "px_kw": 0.065,
+        "pk_kw": 0.28,
+        "uvn_kv": 10.0,
+        "unn_kv": 0.4,
+        "uk_percent": 4.0,
+        "pbv_steps": 5,
+        "pbv_percent": 2.5
+      },
+      {
+        "type_name": "ТМ-16",
+        "sn_kva": 16.0,
+        "px_kw": 0.085,
+        "pk_kw": 0.46,
+        "uvn_kv": 10.0,
+        "unn_kv": 0.4,
+        "uk_percent": 4.0,
+        "pbv_steps": 5,
+        "pbv_percent": 2.5
+      },
+      {
+        "type_name": "ТМ-25",
+        "sn_kva": 25.0,
+        "px_kw": 0.13,
+        "pk_kw": 0.6,
+        "uvn_kv": 10.0,
+        "unn_kv": 0.4,
+        "uk_percent": 4.5,
+        "pbv_steps": 5,
+        "pbv_percent": 2.5
+      }
+    ],
+    "lines": [
+      {
+        "type_name": "САПт 2х10",
+        "r_phase_ohm_per_km": 3.08,
+        "r_neutral_ohm_per_km": 3.08,
+        "phase_mode": 1,
+        "material": "алюминий",
+        "insulation": "сшитый полиэтилен",
+        "cores": 2,
+        "section": 10.0
+      },
+      {
+        "type_name": "САПт 2х16",
+        "r_phase_ohm_per_km": 1.91,
+        "r_neutral_ohm_per_km": 1.91,
+        "phase_mode": 1,
+        "material": "алюминий",
+        "insulation": "сшитый полиэтилен",
+        "cores": 2,
+        "section": 16.0
+      },
+      {
+        "type_name": "САПт 2х25",
+        "r_phase_ohm_per_km": 1.2,
+        "r_neutral_ohm_per_km": 1.2,
+        "phase_mode": 1,
+        "material": "алюминий",
+        "insulation": "сшитый полиэтилен",
+        "cores": 2,
+        "section": 25.0
+      }
+    ]
+  }
+}

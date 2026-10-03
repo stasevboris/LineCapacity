@@ -1,0 +1,40 @@
+{
+  "status": 200,
+  "body": {
+    "title": "Ответвление к потребителю",
+    "line": {
+      "type_name": "А 35",
+      "label": "Л-1",
+      "phase_mode": 0,
+      "length_m": 40.0,
+      "r_phase_ohm_per_km": 0.868,
+      "r_neutral_ohm_per_km": 0.868,
+      "r_single_phase_ohm_per_km": 1.8,
+      "phase_no": 1
+    },
+    "consumer": {
+      "label": "10",
+      "address": "п.Стрешин, ул. Юбилейная, д.10",
+      "load_type": 0,
+      "p_kw": 0.35,
+      "cos_phi": 0.998,
+      "annual_kwh": 1293.0,
+      "category": 0,
+      "type_text": "мощность по ТУ: 12 кВт"
+    },
+    "blank": {
+      "type_name": "А 16",
+      "label": "Л-1",
+      "phase_mode": 0,
+      "length_m": 30.0,
+      "r_phase_ohm_per_km": 1.8,
+      "r_neutral_ohm_per_km": 1.8,
+      "r_single_phase_ohm_per_km": 1.8,
+      "phase_no": 1
+    },
+    "type_texts": [
+      "мощность по ТУ: 12 кВт",
+      "мощность по ТУ: 3,5 кВт"
+    ]
+  }
+}

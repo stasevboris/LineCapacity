@@ -1,0 +1,9 @@
+POST http://127.0.0.1:8000/api/exchange/import
+Content-Type: multipart/form-data; boundary=VoltPlan
+
+--VoltPlan
+Content-Disposition: form-data; name="file"; filename="Каменка КТП158.cir"
+Content-Type: application/octet-stream
+
+< ../../../../schemes/Каменка КТП158.cir
+--VoltPlan--

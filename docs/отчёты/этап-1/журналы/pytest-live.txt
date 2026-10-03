@@ -1,0 +1,32 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.3, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Acer\AppData\Local\Programs\Python\Python311\python.exe
+hypothesis profile 'default'
+rootdir: C:\Users\Acer\Desktop\Учёба\7 семестр\Итог\Этап 1.1
+configfile: pyproject.toml
+plugins: anyio-3.7.1, hypothesis-6.163.0
+collecting ... collected 22 items
+
+tests/live/test_editor_ui.py::test_empty_editor PASSED                   [  4%]
+tests/live/test_editor_ui.py::test_new_scheme_from_dialog PASSED         [  9%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[базовая] PASSED [ 13%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[сложная] PASSED [ 18%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[правка] PASSED [ 22%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[умолчания] PASSED [ 27%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[первая-лэп] PASSED [ 31%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[отмена] PASSED [ 36%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[отмена-отходящей] PASSED [ 40%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[отмена-новой] PASSED [ 45%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[удаление] PASSED [ 50%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[свободные-концы] PASSED [ 54%]
+tests/live/test_editor_ui.py::test_menu_popup_and_properties PASSED      [ 59%]
+tests/live/test_editor_ui.py::test_refusal_is_shown_and_undo_works PASSED [ 63%]
+tests/live/test_editor_ui.py::test_catalog_picker_fills_line PASSED      [ 68%]
+tests/live/test_editor_ui.py::test_import_renders_file[Болсуны КТП №132 ВЛ 7257] PASSED [ 72%]
+tests/live/test_editor_ui.py::test_import_renders_file[Ботвиново ГКТП397] PASSED [ 77%]
+tests/live/test_editor_ui.py::test_import_renders_file[Гатское КТП179] PASSED [ 81%]
+tests/live/test_editor_ui.py::test_dark_theme PASSED                     [ 86%]
+tests/live/test_editor_ui.py::test_sample_edit_keeps_everything_else PASSED [ 90%]
+tests/live/test_editor_ui.py::test_every_line_offers_phase_choice PASSED [ 95%]
+tests/live/test_editor_ui.py::test_narrow_window_shows_notice PASSED     [100%]
+
+======================== 22 passed in 73.27s (0:01:13) ========================

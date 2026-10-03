@@ -1,0 +1,21 @@
+Name                            Stmts   Miss  Cover
+---------------------------------------------------
+voltplan\__init__.py                0      0   100%
+voltplan\__main__.py               27     27     0%
+voltplan\api\__init__.py            0      0   100%
+voltplan\api\catalog.py             7      0   100%
+voltplan\api\exchange.py           45      0   100%
+voltplan\api\scheme.py             50      1    98%
+voltplan\app.py                    50      0   100%
+voltplan\catalog.py                90      7    92%
+voltplan\config.py                 10      0   100%
+voltplan\errors.py                 61      8    87%
+voltplan\exchange\__init__.py       0      0   100%
+voltplan\exchange\cir.py           83      2    98%
+voltplan\scheme\__init__.py         0      0   100%
+voltplan\scheme\actions.py         71      2    97%
+voltplan\scheme\editor.py         459     12    97%
+voltplan\scheme\forms.py           55      3    95%
+voltplan\scheme\model.py          106      0   100%
+---------------------------------------------------
+TOTAL                            1114     62    94%

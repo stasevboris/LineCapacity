@@ -1,0 +1,11 @@
+POST http://127.0.0.1:8000/api/scheme/apply
+Content-Type: application/json
+
+{
+  "action": {
+    "kind": "new",
+    "line": {
+      "length_m": "сорок"
+    }
+  }
+}

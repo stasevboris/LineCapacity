@@ -1,0 +1,43 @@
+{
+  "status": 200,
+  "body": {
+    "title": "Новая схема",
+    "transformer": {
+      "type_name": "ТМ-250",
+      "label": "T1 КТП-54",
+      "sn_kva": 250.0,
+      "px_kw": 0.74,
+      "pk_kw": 3.7,
+      "unn_kv": 0.4,
+      "uvn_kv": 10.0,
+      "uk_percent": 4.5,
+      "pbv_steps": 5,
+      "pbv_step": 0,
+      "pbv_percent": 2.5
+    },
+    "line": {
+      "type_name": "А 16",
+      "label": "Л-1",
+      "phase_mode": 0,
+      "length_m": 30.0,
+      "r_phase_ohm_per_km": 1.8,
+      "r_neutral_ohm_per_km": 1.8,
+      "r_single_phase_ohm_per_km": 1.8,
+      "phase_no": 1
+    },
+    "pole": {
+      "label": "1/1",
+      "branch_count": 1
+    },
+    "blank": {
+      "type_name": "А 16",
+      "label": "Л-1",
+      "phase_mode": 0,
+      "length_m": 30.0,
+      "r_phase_ohm_per_km": 1.8,
+      "r_neutral_ohm_per_km": 1.8,
+      "r_single_phase_ohm_per_km": 1.8,
+      "phase_no": 1
+    }
+  }
+}
