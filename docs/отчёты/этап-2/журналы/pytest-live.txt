@@ -1,0 +1,47 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.3, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\Acer\AppData\Local\Programs\Python\Python311\python.exe
+hypothesis profile 'default'
+rootdir: C:\Users\Acer\Desktop\Учёба\7 семестр\Итог\Этап 2.1
+configfile: pyproject.toml
+plugins: anyio-3.7.1, hypothesis-6.163.0
+collecting ... collected 37 items
+
+tests/live/test_editor_ui.py::test_empty_editor PASSED                   [  2%]
+tests/live/test_editor_ui.py::test_new_scheme_from_dialog PASSED         [  5%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0431\u0430\u0437\u043e\u0432\u0430\u044f] PASSED [  8%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0441\u043b\u043e\u0436\u043d\u0430\u044f] PASSED [ 10%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043f\u0440\u0430\u0432\u043a\u0430] PASSED [ 13%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0443\u043c\u043e\u043b\u0447\u0430\u043d\u0438\u044f] PASSED [ 16%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043f\u0435\u0440\u0432\u0430\u044f-\u043b\u044d\u043f] PASSED [ 18%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043e\u0442\u043c\u0435\u043d\u0430] PASSED [ 21%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043e\u0442\u043c\u0435\u043d\u0430-\u043e\u0442\u0445\u043e\u0434\u044f\u0449\u0435\u0439] PASSED [ 24%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043e\u0442\u043c\u0435\u043d\u0430-\u043d\u043e\u0432\u043e\u0439] PASSED [ 27%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0434\u0432\u043e\u0439\u043d\u0430\u044f-\u043e\u0442\u043c\u0435\u043d\u0430] PASSED [ 29%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u043e\u0442\u043c\u0435\u043d\u0430-\u043f\u043e\u0441\u043b\u0435-\u0443\u0434\u0430\u043b\u0435\u043d\u0438\u044f] PASSED [ 32%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0435] PASSED [ 35%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0441\u0432\u043e\u0431\u043e\u0434\u043d\u044b\u0435-\u043a\u043e\u043d\u0446\u044b] PASSED [ 37%]
+tests/live/test_editor_ui.py::test_ui_builds_same_file_as_engine[\u0443\u0434\u0430\u043b\u0435\u043d\u0438\u0435-\u043f\u0435\u0440\u0432\u043e\u0439-\u043e\u0442\u0445\u043e\u0434\u044f\u0449\u0435\u0439] PASSED [ 40%]
+tests/live/test_editor_ui.py::test_menu_popup_and_properties PASSED      [ 43%]
+tests/live/test_editor_ui.py::test_refusal_is_shown_and_undo_works PASSED [ 45%]
+tests/live/test_editor_ui.py::test_catalog_picker_fills_line PASSED      [ 48%]
+tests/live/test_editor_ui.py::test_import_renders_file[\u0411\u043e\u043b\u0441\u0443\u043d\u044b \u041a\u0422\u041f \u2116132 \u0412\u041b 7257] PASSED [ 51%]
+tests/live/test_editor_ui.py::test_import_renders_file[\u0411\u043e\u0442\u0432\u0438\u043d\u043e\u0432\u043e \u0413\u041a\u0422\u041f397] PASSED [ 54%]
+tests/live/test_editor_ui.py::test_import_renders_file[\u0413\u0430\u0442\u0441\u043a\u043e\u0435 \u041a\u0422\u041f179] PASSED [ 56%]
+tests/live/test_editor_ui.py::test_dark_theme PASSED                     [ 59%]
+tests/live/test_editor_ui.py::test_sample_edit_keeps_everything_else PASSED [ 62%]
+tests/live/test_editor_ui.py::test_every_line_offers_phase_choice PASSED [ 64%]
+tests/live/test_editor_ui.py::test_narrow_window_shows_notice PASSED     [ 67%]
+tests/live/test_editor_ui.py::test_calc_shows_linecapacity_results PASSED [ 70%]
+tests/live/test_editor_ui.py::test_edit_hides_results_but_keeps_report PASSED [ 72%]
+tests/live/test_editor_ui.py::test_calc_refusal_is_shown PASSED          [ 75%]
+tests/live/test_editor_ui.py::test_report_button_follows_linecapacity_rule[\u0441\u0432\u0435\u0442-False] PASSED [ 78%]
+tests/live/test_editor_ui.py::test_report_button_follows_linecapacity_rule[\u0438\u043d\u043e\u0439-True] PASSED [ 81%]
+tests/live/test_editor_ui.py::test_opened_file_disables_report_until_calculation PASSED [ 83%]
+tests/live/test_editor_ui.py::test_labels_are_red_only_outside_limits[\u043a\u0440\u0430\u0441\u043d\u044b\u0435] PASSED [ 86%]
+tests/live/test_editor_ui.py::test_labels_are_red_only_outside_limits[\u0432-\u043d\u043e\u0440\u043c\u0435] PASSED [ 89%]
+tests/live/test_editor_ui.py::test_fit_keeps_result_labels_in_view PASSED [ 91%]
+tests/live/test_editor_ui.py::test_transformer_window_draws_daily_charts PASSED [ 94%]
+tests/live/test_editor_ui.py::test_late_mark_answer_does_not_replace_newer_one PASSED [ 97%]
+tests/live/test_editor_ui.py::test_line_window_shows_how_mark_is_read PASSED [100%]
+
+======================= 37 passed in 115.30s (0:01:55) ========================

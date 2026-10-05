@@ -1,0 +1,97 @@
+POST http://127.0.0.1:8000/api/calc
+Content-Type: application/json
+
+{
+  "scheme": {
+    "transformer": {
+      "type_name": "ТМ-250",
+      "label": "T1 КТП-54",
+      "x": 50,
+      "y": 40,
+      "h": 5467,
+      "sn_kva": 250.0,
+      "px_kw": 0.74,
+      "pk_kw": 3.7,
+      "unn_kv": 0.4,
+      "uvn_kv": 10.0,
+      "uk_percent": 4.5,
+      "pbv_step": 0,
+      "pbv_steps": 5,
+      "pbv_percent": 2.5,
+      "r_ohm": 0.009472,
+      "x_ohm": 0.027197816382937803,
+      "kt": 25.0
+    },
+    "lines": [
+      {
+        "type_name": "А 16",
+        "label": "Л-1",
+        "x": 53,
+        "y": 70,
+        "end_x": 133,
+        "end_y": 70,
+        "vertical": 0,
+        "line_type": 0,
+        "phase_mode": 0,
+        "length_m": 30.0,
+        "canvas_length": 80,
+        "r_phase_ohm_per_km": 1.8,
+        "r_neutral_ohm_per_km": 1.8,
+        "r_single_phase_ohm_per_km": 1.8,
+        "phase_no": 1,
+        "r_phase_ohm": 0.054,
+        "r_neutral_ohm": 0.054,
+        "feeder_no": 0
+      }
+    ],
+    "poles": [
+      {
+        "label": "1/1",
+        "x": 133,
+        "y": 70,
+        "end_x": 193,
+        "end_y": 70,
+        "canvas_length": 60,
+        "branch_count": 1,
+        "current_branch_no": 0,
+        "feeder_no": 0
+      }
+    ],
+    "consumers": [],
+    "connection_points": [
+      {
+        "x": 133,
+        "y": 70,
+        "active": false,
+        "point_kind": 1,
+        "object_no": 0,
+        "branch_no": 0,
+        "feeder_no": 0
+      },
+      {
+        "x": 163,
+        "y": 70,
+        "active": true,
+        "point_kind": 2,
+        "object_no": 0,
+        "branch_no": 1,
+        "feeder_no": 0
+      },
+      {
+        "x": 193,
+        "y": 70,
+        "active": true,
+        "point_kind": 2,
+        "object_no": 0,
+        "branch_no": 0,
+        "feeder_no": 0
+      }
+    ],
+    "outgoing_count": 1,
+    "spare": {
+      "lines": [],
+      "poles": [],
+      "consumers": []
+    }
+  }
+}

@@ -1,0 +1,1 @@
+GET http://127.0.0.1:8000/api/catalog/mark?type_name=СИП 4х&phase_mode=0
