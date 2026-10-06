@@ -17,6 +17,11 @@ export const state = {
   report: null,
   reportReady: false,
   reportEnabled: false,
+  project: null,
+  readOnly: false,
+  settings: {},
+  settingsInfo: null,
+  nextPeriod: null,
 };
 
 export function subscribe(listener) {
@@ -52,14 +57,18 @@ export function commit(scheme, { current = null, blocks = [] } = {}) {
   notify('scheme');
 }
 
-export function load(scheme, name, { blocks = [scheme], dirty = false, current = null } = {}) {
+export function load(scheme, name, { blocks = [scheme], dirty = false, current = null, project = null } = {}) {
   state.scheme = scheme;
   state.name = name;
+  state.project = project;
+  state.readOnly = Boolean(project && project.role === 'reader');
+  if (project) state.settings = { ...(project.settings || {}) };
+  state.nextPeriod = null;
   state.dirty = dirty;
   state.results = null;
   state.report = null;
   state.reportReady = false;
-  state.blocks = [...blocks];
+  state.blocks = scheme ? [...blocks] : [];
   state.point = current && isActivePoint(current) ? current : null;
   state.actions = [];
   state.selection = null;
@@ -109,4 +118,8 @@ export function selectedObject() {
   if (selection.kind === 'transformer') return state.scheme.transformer;
   const list = collection(selection.kind);
   return list ? list[selection.index] : null;
+}
+
+export function keptProject() {
+  return state.project && state.project.empty && !state.readOnly ? state.project : null;
 }

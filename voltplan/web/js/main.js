@@ -1,5 +1,5 @@
 import { choosePoint, clearPoint, hidePopup, renderActions } from './actions.js';
-import { api } from './api.js';
+import { api, site } from './api.js';
 import { openCalcDialog } from './calc.js';
 import { fit, initCanvas } from './canvas.js';
 import { $, toast } from './dom.js';
@@ -9,25 +9,12 @@ import { closePicker, initPicker, pickerOpen } from './picker.js';
 import { objectName, renderProps } from './props.js';
 import { applyView, render } from './render.js';
 import { closeReport, openReport, renderResults, reportOpen } from './results.js';
-import { clearResults, load, notify, restore, selectedObject, state, subscribe, undoBlock } from './state.js';
-
-const THEME_KEY = 'voltplan-theme';
-
-function applyTheme(theme) {
-  if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
-  else document.documentElement.removeAttribute('data-theme');
-}
-
-function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem(THEME_KEY); } catch (error) { saved = null; }
-  applyTheme(saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
-  $('btn-theme').addEventListener('click', () => {
-    const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    applyTheme(next);
-    try { localStorage.setItem(THEME_KEY, next); } catch (error) { return; }
-  });
-}
+import { initProjects, openFromAddress, renderProjectBar, saveToProject } from './project.js';
+import { startPage } from './session.js';
+import { assignKind, closeMenu, initTools, menuOpen } from './tools.js';
+import {
+  clearResults, keptProject, load, notify, restore, selectedObject, state, subscribe, undoBlock,
+} from './state.js';
 
 function updateStats() {
   const scheme = state.scheme;
@@ -40,7 +27,7 @@ function updateStats() {
 }
 
 function updateChrome() {
-  $('btn-undo').disabled = state.blocks.length === 0;
+  $('btn-undo').disabled = state.blocks.length === 0 || state.readOnly;
   $('btn-save').disabled = !state.scheme;
   $('btn-calc').disabled = !state.scheme;
   $('dirty').hidden = !state.dirty;
@@ -54,6 +41,7 @@ function refresh(reason) {
   if (reason !== 'point' && reason !== 'season') renderProps();
   updateStats();
   updateChrome();
+  renderProjectBar();
   if (reason === 'scheme' && state.point) choosePoint(state.point, { popup: false });
 }
 
@@ -66,7 +54,7 @@ function selectObject(kind, index) {
 function deleteSelection() {
   const selection = state.selection;
   const obj = selectedObject();
-  if (!selection || !obj || selection.kind === 'transformer') return;
+  if (!selection || !obj || selection.kind === 'transformer' || state.readOnly) return;
   if (!confirm(`Удалить ${objectName(selection.kind, obj)}?`)) return;
   run({ kind: 'delete', target: selection.kind, index: selection.index })
     .then(() => toast('Удалено'))
@@ -76,14 +64,16 @@ function deleteSelection() {
 function newScheme() {
   if (!confirmDiscard()) return;
   openNewSchemeDialog((result) => {
-    load(result.scheme, 'Новая схема', { blocks: result.snapshots, dirty: true, current: result.current });
+    const project = keptProject();
+    load(result.scheme, project ? project.name : 'Новая схема',
+      { blocks: result.snapshots, dirty: true, current: result.current, project });
     requestAnimationFrame(fit);
   });
 }
 
 async function doUndo() {
   const block = undoBlock();
-  if (!block) return;
+  if (!block || state.readOnly) return;
   try {
     const result = await api.undo(state.scheme, block);
     restore(result.scheme);
@@ -124,7 +114,8 @@ function editableTarget(event) {
 function initKeyboard() {
   window.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
-      if (pickerOpen()) closePicker();
+      if (menuOpen()) closeMenu();
+      else if (pickerOpen()) closePicker();
       else if (modalOpen()) closeActiveModal();
       else if (reportOpen()) closeReport();
       else hidePopup();
@@ -132,13 +123,14 @@ function initKeyboard() {
     }
     if (modalOpen() || pickerOpen()) return;
     const ctrl = event.ctrlKey || event.metaKey;
-    if (ctrl && event.code === 'KeyS') { event.preventDefault(); saveFile(); return; }
+    if (ctrl && event.code === 'KeyS') { event.preventDefault(); saveToProject(); return; }
     if (ctrl && event.code === 'KeyO') { event.preventDefault(); openFile(); return; }
     if (editableTarget(event)) return;
     if (ctrl && event.code === 'KeyZ') { event.preventDefault(); doUndo(); return; }
     if (event.key === 'Delete') { deleteSelection(); return; }
     if (event.key === 'F4') { event.preventDefault(); fit(); return; }
     if (event.key === 'F7') { event.preventDefault(); openCalcDialog(); return; }
+    if (event.key === 'F6') { event.preventDefault(); assignKind(true); return; }
     if ((event.key === 'Insert' || event.key === '+') && state.scheme) {
       event.preventDefault();
       if (state.point) choosePoint(state.point, { click: false });
@@ -151,11 +143,13 @@ function initKeyboard() {
 }
 
 async function init() {
-  initTheme();
+  await startPage();
   initPicker();
   initModal();
   initExchange();
   initToolbar();
+  initProjects();
+  initTools();
   initKeyboard();
   initCanvas({
     point: (point) => choosePoint(point),
@@ -171,11 +165,15 @@ async function init() {
   try {
     state.titles = await api.titles();
     state.catalog = await api.catalog();
+    const own = await site.get('/api/marks');
+    state.catalog = { lines: [...own.lines, ...state.catalog.lines],
+      transformers: [...own.transformers, ...state.catalog.transformers] };
   } catch (error) {
     toast(`Справочник не загружен: ${error.message}`, 'bad');
   }
   window.addEventListener('resize', () => applyView());
   clearPoint();
+  await openFromAddress();
 }
 
 init();

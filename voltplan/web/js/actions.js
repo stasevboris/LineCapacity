@@ -2,6 +2,7 @@ import { api } from './api.js';
 import { toScreen } from './canvas.js';
 import { $, h, s, toast } from './dom.js';
 import { openActionDialog } from './dialogs.js';
+import { t } from './i18n.js';
 import { adopt, notify, state } from './state.js';
 
 const ICONS = {
@@ -45,8 +46,9 @@ function describePoint(point, pointKind) {
   if (!contact) return null;
   if (pointKind === 2) {
     const pole = scheme.poles.find((p) => p.y === point.y && point.x >= p.x && point.x <= p.x + p.canvas_length);
-    const where = contact.branch_no > 0 ? `ответвление № ${contact.branch_no}` : 'конец опоры';
-    return [h('b', {}, `Опора ${pole ? pole.label : ''}`), `: ${where}`];
+    const where = contact.branch_no > 0 ? t('ответвление № {number}', { number: contact.branch_no })
+      : t('конец опоры');
+    return [h('b', {}, t('Опора {label}', { label: pole ? pole.label : '' })), `: ${where}`];
   }
   return [h('b', {}, POINT_KINDS[pointKind] || 'точка'), ` (x ${point.x}, y ${point.y})`];
 }
@@ -55,7 +57,14 @@ export function renderActions() {
   const info = $('point-info');
   const box = $('actions');
   if (!state.scheme) {
-    info.textContent = 'Создайте схему или откройте файл .cir.';
+    info.textContent = state.readOnly ? 'В этом варианте проекта схемы ещё нет.'
+      : 'Создайте схему или откройте файл .cir.';
+    box.replaceChildren();
+    return;
+  }
+  if (state.readOnly) {
+    info.textContent = 'Проект открыт только для просмотра: схему можно изучать и рассчитывать, но не изменять.';
+    info.classList.add('muted');
     box.replaceChildren();
     return;
   }
@@ -87,7 +96,7 @@ function showPopup(point, actions) {
 }
 
 export async function choosePoint(point, { popup = true, click = popup } = {}) {
-  if (!state.scheme) return;
+  if (!state.scheme || state.readOnly) return;
   const sent = state.scheme;
   try {
     const answer = await api.menu(sent, point);

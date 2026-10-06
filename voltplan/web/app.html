@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VoltPlan — редактор схемы</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/app.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/" aria-label="VoltPlan">
+      <img class="brand-mark" src="/favicon.svg" alt="" width="30" height="30">
+      <span>VoltPlan</span>
+    </a>
+    <div class="doc">
+      <input id="scheme-name" class="doc-name" value="Новая схема" maxlength="120" spellcheck="false"
+        aria-label="Название схемы">
+      <span id="dirty" class="doc-dirty" hidden>изменена</span>
+    </div>
+    <div id="project-bar" class="project-bar" hidden>
+      <span class="project-label">Проект</span>
+      <a id="project-title" translate="no" class="project-title" href="/account#projects"
+        title="Проекты в личном кабинете"></a>
+      <span id="project-role" class="role"></span>
+      <label class="variant-pick"><span>Вариант</span>
+        <select id="variant-select" translate="no" aria-label="Вариант схемы"></select></label>
+      <button id="btn-variant-new" class="btn btn-small" type="button" title="Новый вариант из сохранённого текущего">
+        + Вариант
+      </button>
+      <button id="btn-variant-rename" class="icon-btn small" type="button" title="Переименовать вариант"
+        aria-label="Переименовать вариант">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0
+            l-1.83 1.83 3.75 3.75z"/>
+        </svg>
+      </button>
+      <button id="btn-variant-delete" class="icon-btn small" type="button" title="Удалить вариант"
+        aria-label="Удалить вариант">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6zM19 4h-3.5l-1-1h-5l-1 1H5v2h14z"/>
+        </svg>
+      </button>
+    </div>
+    <div class="top-right">
+      <div id="language-area"></div>
+      <button id="btn-theme" class="icon-btn" title="Светлая / тёмная тема" aria-label="Тема">
+        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
+      </button>
+      <div id="user-area"></div>
+    </div>
+  </header>
+  <div class="toolbar-row">
+    <nav class="toolbar" aria-label="Файл">
+      <span class="tgroup">
+        <button id="btn-new" class="btn" title="Новая схема">Новая схема</button>
+        <button id="btn-open" class="btn" title="Открыть файл .cir (Ctrl+O)">Открыть .cir</button>
+        <button id="btn-save" class="btn" title="Сохранить в файл .cir">Сохранить .cir</button>
+      </span>
+      <input id="file-cir" type="file" accept=".cir" hidden>
+      <span class="tgroup">
+        <button id="btn-projects" class="btn" title="Открыть проект">Проекты</button>
+        <button id="btn-save-project" class="btn btn-primary" title="Сохранить в проект (Ctrl+S)">
+          Сохранить в проект
+        </button>
+      </span>
+      <button id="btn-undo" class="btn" title="Отменить последнее действие (Ctrl+Z)" disabled>Отменить</button>
+      <span class="menu-wrap">
+        <button id="btn-calc" class="btn btn-accent split-left" title="Запуск расчёта (F7)" disabled>Расчёт</button>
+        <button id="btn-calc-menu" class="btn btn-accent split-right" type="button" aria-haspopup="menu"
+          aria-expanded="false" title="Меню «Расчёт»" aria-label="Меню «Расчёт»">▾</button>
+        <span id="calc-menu" class="menu" role="menu" hidden></span>
+      </span>
+      <button id="btn-report" class="btn" title="Основные результаты последнего расчёта" disabled>Итоги</button>
+    </nav>
+    <span id="readonly-badge" class="readonly-badge" hidden>Только просмотр</span>
+  </div>
+
+  <div class="work">
+    <aside class="panel panel-left" aria-label="Построение">
+      <section class="block">
+        <h2 class="block-title">Точка присоединения</h2>
+        <div id="point-info" class="point-info muted">Выберите синюю точку на схеме.</div>
+        <div id="actions" class="actions"></div>
+      </section>
+      <section class="block">
+        <h2 class="block-title">Схема</h2>
+        <dl class="stats">
+          <div><dt>Отходящих линий</dt><dd id="st-out">0</dd></div>
+          <div><dt>ЛЭП</dt><dd id="st-lines">0</dd></div>
+          <div><dt>Опор</dt><dd id="st-poles">0</dd></div>
+          <div><dt>Потребителей</dt><dd id="st-cons">0</dd></div>
+          <div><dt>Свободных точек</dt><dd id="st-free">0</dd></div>
+        </dl>
+      </section>
+      <section class="block legend">
+        <h2 class="block-title">Обозначения</h2>
+        <ul>
+          <li><i class="lg lg-bus"></i>Шины ТП</li>
+          <li><i class="lg lg-pole"></i>Опора</li>
+          <li><i class="lg lg-line"></i>ЛЭП</li>
+          <li><i class="lg lg-c3"></i>Трёхфазный потребитель</li>
+          <li><i class="lg lg-c1"></i><i class="lg lg-c2"></i><i class="lg lg-c3p"></i>Однофазный: фаза 1, 2, 3</li>
+          <li><i class="lg lg-point"></i>Свободная точка присоединения</li>
+        </ul>
+      </section>
+    </aside>
+
+    <main class="stage" id="stage">
+      <svg id="scene" xmlns="http://www.w3.org/2000/svg" aria-label="Схема сети">
+        <defs>
+          <pattern id="grid-minor" width="10" height="10" patternUnits="userSpaceOnUse">
+            <path d="M10 0H0V10" class="grid-minor"/>
+          </pattern>
+          <pattern id="grid-major" width="60" height="60" patternUnits="userSpaceOnUse">
+            <rect width="60" height="60" fill="url(#grid-minor)"/>
+            <path d="M60 0H0V60" class="grid-major"/>
+          </pattern>
+        </defs>
+        <g id="viewport">
+          <rect x="-20000" y="-20000" width="60000" height="60000" fill="url(#grid-major)"/>
+          <g id="layer-lines"></g>
+          <g id="layer-poles"></g>
+          <g id="layer-consumers"></g>
+          <g id="layer-labels" translate="no"></g>
+          <g id="layer-results"></g>
+          <g id="layer-points"></g>
+        </g>
+      </svg>
+      <div id="empty" class="empty">
+        <h1>Схема пуста</h1>
+        <p>Создайте новую схему — трансформатор, первая отходящая линия и опора появятся сразу —
+          или откройте файл&nbsp;.cir программы LineCapacity.</p>
+        <div class="empty-actions">
+          <button id="empty-new" class="btn btn-primary">Новая схема</button>
+          <button id="empty-open" class="btn">Открыть .cir</button>
+        </div>
+      </div>
+      <div class="zoom" role="group" aria-label="Масштаб">
+        <button id="zoom-in" class="icon-btn" title="Крупнее">+</button>
+        <span id="status-zoom" class="zoom-label" translate="no">100 %</span>
+        <button id="zoom-out" class="icon-btn" title="Мельче">−</button>
+        <button id="zoom-fit" class="icon-btn" title="Показать всю схему (F4)">⤢</button>
+      </div>
+      <div id="popup" class="popup" hidden></div>
+      <div id="results-bar" class="results-bar" hidden>
+        <div class="seg" role="radiogroup" aria-label="Показать результаты">
+          <label><input type="radio" name="season" value="0">Лето</label>
+          <label><input type="radio" name="season" value="1">Зима</label>
+          <label><input type="radio" name="season" value="2">Мин. нагрузки</label>
+        </div>
+        <span id="results-verdict" class="verdict"></span>
+        <button id="btn-hide-results" class="btn btn-small" type="button">Скрыть результаты</button>
+      </div>
+      <section id="report" class="report" hidden aria-label="Основные результаты расчётов">
+        <header class="report-head">
+          <h2>Основные результаты расчётов</h2>
+          <button type="button" id="report-close" class="icon-btn" aria-label="Закрыть">✕</button>
+        </header>
+        <div id="report-body" class="report-body"></div>
+      </section>
+    </main>
+
+    <aside class="panel panel-right" aria-label="Свойства">
+      <div id="props"><p class="muted">Выберите объект на схеме, чтобы увидеть и изменить его параметры.</p></div>
+    </aside>
+  </div>
+  <footer class="statusbar">
+    <span class="sb-dot" aria-hidden="true"></span>
+    <span id="status-hint">Колесо — масштаб, перетаскивание — перемещение полотна.</span>
+    <span class="sb-right">F7 — расчёт · F4 — вся схема · Ctrl+Z — отмена</span>
+  </footer>
+
+  <div id="modal" class="modal" hidden>
+    <form id="modal-card" class="modal-card" novalidate>
+      <header class="modal-head">
+        <h2 id="modal-title"></h2>
+        <button type="button" id="modal-close" class="icon-btn" aria-label="Закрыть">✕</button>
+      </header>
+      <div id="modal-body" class="modal-body"></div>
+      <footer class="modal-foot">
+        <span id="modal-error" class="form-error" role="alert"></span>
+        <button type="button" id="modal-cancel" class="btn">Отмена</button>
+        <button type="submit" id="modal-ok" class="btn btn-primary">Сохранить</button>
+      </footer>
+    </form>
+  </div>
+
+  <div id="picker" class="modal" hidden>
+    <div class="modal-card picker-card">
+      <header class="modal-head">
+        <h2 id="picker-title">Справочник</h2>
+        <button type="button" id="picker-close" class="icon-btn" aria-label="Закрыть">✕</button>
+      </header>
+      <input id="picker-search" class="input" placeholder="Начните вводить марку" autocomplete="off">
+      <div id="picker-list" class="picker-list" role="listbox" translate="no"></div>
+      <div id="picker-count" class="muted picker-count"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div class="narrow" role="alert">
+    <h2>Нужен экран пошире</h2>
+    <p>Редактор схем рассчитан на окно шириной от 900 пикселей. Разверните окно или откройте VoltPlan на компьютере.</p>
+  </div>
+
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>

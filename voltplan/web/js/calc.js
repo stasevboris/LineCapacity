@@ -11,8 +11,9 @@ const PERIODS = [
 ];
 
 function calcSection() {
+  const preset = state.nextPeriod ?? 2;
   const radios = PERIODS.map((period) => h('input', {
-    type: 'radio', name: 'period', value: period.value, checked: period.value === 2,
+    type: 'radio', name: 'period', value: period.value, checked: period.value === preset,
   }));
   const minLoad = h('input', { type: 'checkbox', name: 'min_load', checked: true });
   const el = h('fieldset', { class: 'fieldset' }, h('legend', {}, 'Период'),
@@ -39,7 +40,8 @@ export function openCalcDialog() {
     okText: 'Запустить расчёт',
     async onSubmit() {
       const { period, minLoad } = section.read();
-      const results = await api.calc(state.scheme, period, minLoad);
+      const results = await api.calc(state.scheme, period, minLoad, state.settings);
+      state.nextPeriod = null;
       applyResults(results, period === 0 ? 0 : 1);
       if (results.show_report) openReport();
     },

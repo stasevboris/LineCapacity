@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вход — VoltPlan</title>
+  <meta name="description" content="Вход в учётную запись VoltPlan.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main" class="auth-wrap">
+    <div class="auth-card">
+      <h2>Вход в учётную запись</h2>
+      <p class="sub">Войдите, чтобы открыть редактор и свои проекты.</p>
+      <form id="login-form" novalidate>
+        <div class="field">
+          <label for="email">Электронная почта</label>
+          <input id="email" name="email" type="email" autocomplete="username" required maxlength="254"
+            placeholder="you@example.com">
+        </div>
+        <div class="field">
+          <label for="password">Пароль</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128"
+            placeholder="••••••••">
+        </div>
+        <div id="form-error" class="form-error" role="alert"></div>
+        <button id="btn-submit" class="btn btn-primary" type="submit">Войти</button>
+      </form>
+      <div class="auth-alt">Нет учётной записи? <a id="to-other" href="/register">Зарегистрироваться</a></div>
+    </div>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/auth.js"></script>
+</body>
+</html>

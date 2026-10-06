@@ -1,16 +1,14 @@
 from __future__ import annotations
 
 import pytest
-from fastapi.testclient import TestClient
 
-from tests.helpers import ROOT, SCHEMES
-from voltplan.app import create_app
+from tests.helpers import ROOT, SCHEMES, signed_client
 from voltplan.exchange import cir
 
 
 @pytest.fixture(scope="module")
-def client():
-    return TestClient(create_app())
+def client(tmp_path_factory):
+    return signed_client(tmp_path_factory.mktemp("site"))
 
 
 def test_calc_returns_results(client):

@@ -24,7 +24,8 @@ function fill() {
   list.replaceChildren(...found.slice(0, LIMIT).map((mark) => h('button', {
     type: 'button', class: 'picker-item', role: 'option',
     onclick: () => { close(); onPick(mark); },
-  }, h('span', {}, mark.type_name), h('small', {}, subtitle(kind, mark)))));
+  }, h('span', {}, mark.type_name, mark.own ? h('em', { class: 'own-mark' }, 'моя') : null),
+  h('small', {}, subtitle(kind, mark)))));
   $('picker-count').textContent = found.length > LIMIT
     ? `Показаны первые ${LIMIT} из ${found.length}. Уточните поиск.`
     : `Найдено: ${found.length}`;

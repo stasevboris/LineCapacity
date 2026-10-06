@@ -3,165 +3,333 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>VoltPlan — редактор схемы</title>
-  <link rel="icon" href="/favicon.svg">
-  <link rel="stylesheet" href="/css/app.css">
+  <title>VoltPlan — построение и расчёт сетей 0,4 кВ в браузере</title>
+  <meta name="description" content="Ручное построение схемы воздушной сети 0,4 кВ на холсте, расчёт режима по сезонам
+    и обмен файлами .cir с LineCapacity.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
 </head>
 <body>
-  <header class="top">
-    <a class="brand" href="/" aria-label="VoltPlan">
-      <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>
-      <span>Volt<b>Plan</b></span>
-    </a>
-    <div class="doc">
-      <input id="scheme-name" class="doc-name" value="Новая схема" maxlength="120" spellcheck="false"
-        aria-label="Название схемы">
-      <span id="dirty" class="doc-dirty" hidden>изменена</span>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
     </div>
-    <nav class="toolbar" aria-label="Файл">
-      <button id="btn-new" class="btn" title="Новая схема">Новая схема</button>
-      <button id="btn-open" class="btn" title="Открыть файл .cir (Ctrl+O)">Открыть .cir</button>
-      <button id="btn-save" class="btn btn-primary" title="Сохранить в файл .cir (Ctrl+S)">Сохранить .cir</button>
-      <input id="file-cir" type="file" accept=".cir" hidden>
-      <span class="toolbar-sep"></span>
-      <button id="btn-undo" class="btn" title="Отменить последнее действие (Ctrl+Z)" disabled>Отменить</button>
-      <span class="toolbar-sep"></span>
-      <button id="btn-calc" class="btn btn-accent" title="Запуск расчёта (F7)" disabled>Расчёт</button>
-      <button id="btn-report" class="btn" title="Основные результаты последнего расчёта" disabled>Итоги</button>
-    </nav>
-    <div class="top-right">
-      <button id="btn-theme" class="icon-btn" title="Светлая / тёмная тема" aria-label="Тема">
-        <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9z"/></svg>
-      </button>
+  </nav>
+  <main id="main">
+  <header class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="kicker">Сети 0,4 кВ в браузере</span>
+        <h1>Стройте электросеть <span class="grad">в браузере</span>, а считайте — как в LineCapacity</h1>
+        <p class="lead">
+          Схема воздушной сети 0,4 кВ строится вручную от точек присоединения: трансформатор, отходящие линии,
+          опоры, ответвления и потребители. Сервер рассчитывает режим по сезонам — напряжения, нагрев и потери —
+          и выдаёт тот же отчёт, что LineCapacity 1.27. Файлы <b>.cir</b> открываются в обеих программах.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary btn-lg" id="cta-main" href="/register">Создать аккаунт</a>
+          <a class="btn btn-ghost btn-lg" id="cta-second" href="/features">Как это устроено</a>
+        </div>
+        <div class="badges">
+          <span class="badge">Отчёт совпадает с LineCapacity</span>
+          <span class="badge">Координаты ставит сервер</span>
+          <span class="badge">Русский · English · 中文</span>
+        </div>
+      </div>
+      <div class="scene3d reveal">
+        <canvas id="hero3d" role="img"
+          aria-label="Объёмная модель сети 0,4 кВ: трансформаторная подстанция, три отходящие линии, опоры с траверсами,
+            пролёты проводов и потребители. По проводам от подстанции к потребителям идут точки, показывающие передачу
+            мощности."></canvas>
+        <div class="scene-cap">
+          <span class="scene-tag">ТП</span>
+          <span>3 отходящие линии · 14 опор · <b>импульс</b> — передача мощности</span>
+        </div>
+      </div>
     </div>
   </header>
 
-  <div class="work">
-    <aside class="panel panel-left" aria-label="Построение">
-      <section class="block">
-        <h2 class="block-title">Точка присоединения</h2>
-        <div id="point-info" class="point-info muted">Выберите синюю точку на схеме.</div>
-        <div id="actions" class="actions"></div>
-      </section>
-      <section class="block">
-        <h2 class="block-title">Схема</h2>
-        <dl class="stats">
-          <div><dt>Отходящих линий</dt><dd id="st-out">0</dd></div>
-          <div><dt>ЛЭП</dt><dd id="st-lines">0</dd></div>
-          <div><dt>Опор</dt><dd id="st-poles">0</dd></div>
-          <div><dt>Потребителей</dt><dd id="st-cons">0</dd></div>
-          <div><dt>Свободных точек</dt><dd id="st-free">0</dd></div>
-        </dl>
-      </section>
-      <section class="block legend">
-        <h2 class="block-title">Обозначения</h2>
-        <ul>
-          <li><i class="lg lg-bus"></i>Шины ТП</li>
-          <li><i class="lg lg-pole"></i>Опора</li>
-          <li><i class="lg lg-line"></i>ЛЭП</li>
-          <li><i class="lg lg-c3"></i>Трёхфазный потребитель</li>
-          <li><i class="lg lg-c1"></i><i class="lg lg-c2"></i><i class="lg lg-c3p"></i>Однофазный: фаза 1, 2, 3</li>
-          <li><i class="lg lg-point"></i>Свободная точка присоединения</li>
-        </ul>
-      </section>
-    </aside>
-
-    <main class="stage" id="stage">
-      <svg id="scene" xmlns="http://www.w3.org/2000/svg" aria-label="Схема сети">
-        <defs>
-          <pattern id="grid-minor" width="10" height="10" patternUnits="userSpaceOnUse">
-            <path d="M10 0H0V10" class="grid-minor"/>
-          </pattern>
-          <pattern id="grid-major" width="60" height="60" patternUnits="userSpaceOnUse">
-            <rect width="60" height="60" fill="url(#grid-minor)"/>
-            <path d="M60 0H0V60" class="grid-major"/>
-          </pattern>
-        </defs>
-        <g id="viewport">
-          <rect x="-20000" y="-20000" width="60000" height="60000" fill="url(#grid-major)"/>
-          <g id="layer-lines"></g>
-          <g id="layer-poles"></g>
-          <g id="layer-consumers"></g>
-          <g id="layer-labels"></g>
-          <g id="layer-results"></g>
-          <g id="layer-points"></g>
-        </g>
-      </svg>
-      <div id="empty" class="empty">
-        <h1>Схема пуста</h1>
-        <p>Создайте новую схему — трансформатор, первая отходящая линия и опора появятся сразу —
-          или откройте файл&nbsp;.cir программы LineCapacity.</p>
-        <div class="empty-actions">
-          <button id="empty-new" class="btn btn-primary">Новая схема</button>
-          <button id="empty-open" class="btn">Открыть .cir</button>
-        </div>
-      </div>
-      <div class="zoom" role="group" aria-label="Масштаб">
-        <button id="zoom-in" class="icon-btn" title="Крупнее">+</button>
-        <button id="zoom-fit" class="icon-btn" title="Показать всю схему (F4)">⤢</button>
-        <button id="zoom-out" class="icon-btn" title="Мельче">−</button>
-      </div>
-      <div id="popup" class="popup" hidden></div>
-      <div id="results-bar" class="results-bar" hidden>
-        <div class="seg" role="radiogroup" aria-label="Показать результаты">
-          <label><input type="radio" name="season" value="0">Лето</label>
-          <label><input type="radio" name="season" value="1">Зима</label>
-          <label><input type="radio" name="season" value="2">Мин. нагрузки</label>
-        </div>
-        <span id="results-verdict" class="verdict"></span>
-        <button id="btn-hide-results" class="btn btn-small" type="button">Скрыть результаты</button>
-      </div>
-      <section id="report" class="report" hidden aria-label="Основные результаты расчётов">
-        <header class="report-head">
-          <h2>Основные результаты расчётов</h2>
-          <button type="button" id="report-close" class="icon-btn" aria-label="Закрыть">✕</button>
-        </header>
-        <div id="report-body" class="report-body"></div>
-      </section>
-      <footer class="status">
-        <span id="status-hint">Колесо — масштаб, перетаскивание — перемещение полотна.</span>
-        <span id="status-zoom" class="status-zoom">100 %</span>
-      </footer>
-    </main>
-
-    <aside class="panel panel-right" aria-label="Свойства">
-      <div id="props"><p class="muted">Выберите объект на схеме, чтобы увидеть и изменить его параметры.</p></div>
-    </aside>
-  </div>
-
-  <div id="modal" class="modal" hidden>
-    <form id="modal-card" class="modal-card" novalidate>
-      <header class="modal-head">
-        <h2 id="modal-title"></h2>
-        <button type="button" id="modal-close" class="icon-btn" aria-label="Закрыть">✕</button>
-      </header>
-      <div id="modal-body" class="modal-body"></div>
-      <footer class="modal-foot">
-        <span id="modal-error" class="form-error" role="alert"></span>
-        <button type="button" id="modal-cancel" class="btn">Отмена</button>
-        <button type="submit" id="modal-ok" class="btn btn-primary">Сохранить</button>
-      </footer>
-    </form>
-  </div>
-
-  <div id="picker" class="modal" hidden>
-    <div class="modal-card picker-card">
-      <header class="modal-head">
-        <h2 id="picker-title">Справочник</h2>
-        <button type="button" id="picker-close" class="icon-btn" aria-label="Закрыть">✕</button>
-      </header>
-      <input id="picker-search" class="input" placeholder="Начните вводить марку" autocomplete="off">
-      <div id="picker-list" class="picker-list" role="listbox"></div>
-      <div id="picker-count" class="muted picker-count"></div>
+  <section class="stats">
+    <div class="container">
+      <div class="stat"><div class="num" data-count="48">48</div>
+        <div class="lbl">расчётов LineCapacity 1.27 совпадают с VoltPlan построчно</div></div>
+      <div class="stat"><div class="num" data-count="18">18</div>
+        <div class="lbl">схем реальных сельских сетей в проверке расчёта</div></div>
+      <div class="stat"><div class="num" data-count="1164">1164</div>
+        <div class="lbl">автоматические проверки: модульные, в браузере и на LineCapacity</div></div>
+      <div class="stat"><div class="num">.cir</div>
+        <div class="lbl">обмен схемами с LineCapacity в обе стороны</div></div>
     </div>
-  </div>
+  </section>
 
+  <section class="block">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Возможности</span>
+        <h2>Одна схема — от первой опоры до отчёта</h2>
+        <p>Схема хранится и рассчитывается на сервере. Браузер показывает её на холсте и открывает окна объектов —
+          как в LineCapacity.</p>
+      </div>
+      <div class="cards">
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/>
+            <circle cx="12" cy="18" r="2"/><path d="M6 8v3a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8"/><path d="M12 14v2"/>
+          </svg></div>
+          <h3>Построение от точек присоединения</h3>
+          <p>Отходящая от ТП ЛЭП, пролёт, ответвление, потребитель — каждое действие в своей точке схемы. Окна объектов
+            и значения по умолчанию — как в LineCapacity.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/>
+            <line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="8" y2="10"/><line x1="12" y1="10" x2="12"
+              y2="10"/>
+            <line x1="16" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="8" y2="14"/>
+            <line x1="12" y1="14" x2="12" y2="14"/><line x1="16" y1="14" x2="16" y2="18"/>
+            <line x1="8" y1="18" x2="12" y2="18"/></svg></div>
+          <h3>Расчёт и проверка</h3>
+          <p>Пропускная способность, напряжения у потребителей, нагрев проводов и трансформатора, потери мощности
+            по сезонам и в режиме минимальных нагрузок.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>
+          <h3>Меню «Расчёт»</h3>
+          <p>Типовые и индивидуальные нагрузки, распределение по балансному прибору, импорт показаний АСКУЭ из Excel,
+            настройки расчёта и допустимая мощность потребителя.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+          <h3>Варианты и сценарии</h3>
+          <p>Проект хранит варианты схемы и сценарии настроек. Сводная таблица выделяет лучший вариант: пропускная
+            способность, ГОСТ 32144-2013, напряжение и потери.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0
+              0 2-2V8z"/>
+            <path d="M14 2v6h6"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="15"
+              y2="17"/></svg></div>
+          <h3>Обмен .cir и отчёты</h3>
+          <p>Открывайте и сохраняйте файлы .cir — LineCapacity читает их без правок. Отчёт с результатами расчёта
+            выгружается в DOCX.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0
+              0 1 13 0"/>
+            <circle cx="17" cy="9" r="2.5"/><path d="M16 14.5a5 5 0 0 1 6 5"/></svg></div>
+          <h3>Совместная работа</h3>
+          <p>Команды с ролями владельца, редактора и читателя, друзья и переписка с файлами. Проект открывается
+            команде одним действием.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head">
+        <span class="kicker">Как это работает</span>
+        <h2>Четыре шага до готовой сети</h2>
+      </div>
+      <div class="steps reveal">
+        <div class="step"><div class="n">01</div><h4>Постройте схему</h4>
+          <p>От шин ТП: отходящие линии, опоры, ответвления и потребители.</p></div>
+        <div class="step"><div class="n">02</div><h4>Задайте нагрузки</h4>
+          <p>Типовые из справочника, индивидуальные, по балансному прибору или из Excel.</p></div>
+        <div class="step"><div class="n">03</div><h4>Рассчитайте</h4>
+          <p>Клавиша F7: режим по сезонам и заключение о пропускной способности.</p></div>
+        <div class="step"><div class="n">04</div><h4>Сравните и сохраните</h4>
+          <p>Варианты в проекте, сводная таблица, файлы .cir и DOCX.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="hero-grid aligned">
+        <div class="shot reveal">
+          <img src="/shots/calc.png" width="1440" height="900" loading="lazy"
+            alt="Схема Каменка КТП-158 с результатами расчёта на холсте VoltPlan">
+          <div class="cap">Результаты расчёта подписаны прямо на схеме</div>
+        </div>
+        <div class="section-head reveal flush">
+          <span class="kicker">Точность</span>
+          <h2>Тот же отчёт, что в LineCapacity 1.27</h2>
+          <p>Расчётное ядро VoltPlan разработано для взаимозаменяемости с LineCapacity. Отчёт «Основные результаты»,
+            окна трансформатора, ЛЭП и потребителей и подписи на схеме совпадают с LineCapacity на образцах
+            реальных сельских сетей — не похожий, а тот же результат.</p>
+          <div class="cta"><a class="btn btn-ghost" href="/about">Подробнее о проверке</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head center">
+        <span class="kicker">Проверка на настоящей программе</span>
+        <h2>Схема VoltPlan открывается и считается в LineCapacity</h2>
+        <p>Каждую проверочную схему тест сохраняет в .cir и запускает в самой LineCapacity через её окна —
+          сверяются напряжения, потери, температуры и заключение.</p>
+      </div>
+      <div class="proof reveal">
+        <div class="compare">
+          <div class="head"><span>Расчёт для летнего периода</span><span>LineCapacity → VoltPlan</span></div>
+          <div class="row"><span class="k">Каменка КТП-158, Umin</span><span class="v">210,5 В</span>
+            <span class="m">= 210,5 В</span></div>
+          <div class="row"><span class="k">Гатское КТП-179, Umin</span><span class="v">228,9 В</span>
+            <span class="m">= 228,9 В</span></div>
+          <div class="row"><span class="k">Ковалёв Рог МТП-66, Umin</span><span class="v">198,0 В</span>
+            <span class="m">= 198,0 В</span></div>
+          <div class="row"><span class="k">Потери в ЛЭП, Каменка</span><span class="v">1,31 кВт (5,32 %)</span>
+            <span class="m">= LineCapacity</span></div>
+          <div class="foot">✓ Отчёт совпадает построчно · окна объектов совпадают · .cir читается обеими
+            программами</div>
+        </div>
+        <div class="section-head flush">
+          <h3 class="proof-title">Эталон — сама LineCapacity, а не её описание</h3>
+          <p class="muted proof-text">Проверять расчёт по собственным формулам было бы неполноценно: ошибка в понимании
+            повторилась бы и в проверке. Поэтому тест управляет настоящей программой: открывает файл, запускает
+            расчёт клавишей F7, читает окно результатов и окна объектов и сверяет тексты с VoltPlan.</p>
+          <div class="badges">
+            <span class="badge">122 сверки в наборе</span>
+            <span class="badge">автоматизация окон Windows</span>
+            <span class="badge">тексты сравниваются построчно</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block depth">
+    <div class="container">
+      <div class="section-head center">
+        <span class="kicker">Анализ</span>
+        <h2>Варианты, сценарии и сравнение — без ручных таблиц</h2>
+        <p>Проект хранит несколько вариантов схемы и сценарии настроек. Все они считаются одним и тем же ядром,
+          поэтому результаты сопоставимы.</p>
+      </div>
+      <div class="cards">
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></div>
+          <h3>Сценарии</h3>
+          <p>Наборы настроек расчёта для одного варианта: температура воздуха, типовые нагрузки, утяжеление. Сводная
+            таблица показывает результаты всех сценариев рядом.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 3v9l6
+              3"/></svg></div>
+          <h3>Сравнение вариантов</h3>
+          <p>Лучший вариант выбирается по порядку: пропускная способность, напряжение в пределах ±10 % по
+            ГОСТ 32144-2013, наименьшее напряжение у потребителя, потери мощности.</p>
+        </div>
+        <div class="card reveal">
+          <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/>
+            <path d="M8 20h8M12 16v4"/></svg></div>
+          <h3>Эпюра и годовые потери</h3>
+          <p>В тарифе «Максимум» — эпюра напряжения от шин ТП до потребителя и годовые потери энергии с их
+            стоимостью по методу времени наибольших потерь.</p>
+        </div>
+      </div>
+
+      <div class="scene3d scene-anim compact reveal">
+        <canvas id="anim-pipeline" role="img"
+          aria-label="Путь действия пользователя через пять станций: окно объекта и редактор схемы, затем справочник,
+            схема замещения и расчёт в расчётном ядре. Опора с тремя потребителями проходит все станции, и схема
+            рассчитывается. Потребитель с cos φ = 0 не принимается окном, и схема остаётся прежней."></canvas>
+        <div class="scene-cap">
+          <span class="scene-tag">Конвейер</span>
+          <span>условный пример · окно проверяет поля · размещает и считает — <b>ядро</b> · неверный ввод не меняет
+            схему</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head center">
+        <span class="kicker">Тестирование</span>
+        <h2>Каждая функция проверена автоматически</h2>
+        <p>Проверки запускаются одной командой: модульные и API-проверки, живые сценарии в браузере Chrome с
+          несколькими пользователями и сверка с LineCapacity через её окна.</p>
+      </div>
+      <div class="figures">
+        <div class="figure"><div class="v">992</div><div class="k">модульных и API-проверок, включая стиль кода и
+          полноту переводов</div></div>
+        <div class="figure"><div class="v">49</div><div class="k">живых сценариев в браузере: регистрация, проекты,
+          команды, оплата</div></div>
+        <div class="figure"><div class="v">122</div><div class="k">сверок с LineCapacity 1.27 через её
+          интерфейс</div></div>
+        <div class="figure"><div class="v">3 <small>/ 3</small></div><div class="k">языка интерфейса: русский,
+          английский и китайский</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="cta-band">
+        <h2>Попробуйте VoltPlan прямо сейчас</h2>
+        <p>Регистрация за минуту. Тариф «Демо» — без оплаты и без привязки карты.</p>
+        <a class="btn btn-light btn-lg" id="cta-band" href="/register">Создать аккаунт</a>
+      </div>
+    </div>
+  </section>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
   <div id="toast" class="toast" role="status" hidden></div>
-  <div class="narrow" role="alert">
-    <h2>Нужен экран пошире</h2>
-    <p>Редактор схем рассчитан на окно шириной от 900 пикселей. Разверните окно или откройте VoltPlan на компьютере.</p>
-  </div>
-
-  <script type="module" src="/js/main.js"></script>
+  <script src="/js/hero3d.js" defer></script>
+  <script src="/js/scenes.js" defer></script>
+  <script type="module" src="/js/home.js"></script>
 </body>
 </html>

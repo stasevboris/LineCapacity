@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "voltplan"
 version = "1.0.0"
-description = "VoltPlan: построение схем сетей 0,4 кВ и обмен файлами .cir"
+description = "VoltPlan: построение и расчёт схем сетей 0,4 кВ, проекты, варианты, сценарии, обмен файлами .cir"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.110",
@@ -14,6 +14,7 @@ dependencies = [
     "python-multipart>=0.0.9",
     "numpy>=1.26",
     "scipy>=1.11",
+    "openpyxl>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -33,7 +34,7 @@ voltplan = "voltplan.__main__:main"
 include = ["voltplan*", "linecapacity*"]
 
 [tool.setuptools.package-data]
-voltplan = ["web/*", "web/css/*", "web/js/*"]
+voltplan = ["web/*", "web/css/*", "web/js/*", "web/i18n/*", "web/shots/*"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]

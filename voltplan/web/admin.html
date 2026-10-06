@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Администрирование — VoltPlan</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <aside class="side" aria-label="Разделы администрирования">
+      <div class="logo">Volt·Plan Admin<small>Панель администратора</small></div>
+      <nav id="admin-nav">
+        <a href="#overview" data-pane="overview"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v7h5v-5h6v5h5v-7"/>
+          <path d="M2.5 11.5 12 3.5l9.5 8"/></svg>Обзор</a>
+        <a href="#users" data-pane="users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>
+          </svg>Пользователи</a>
+        <a href="#payments" data-pane="payments"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13"
+            rx="2"/>
+          <path d="M3 10h18"/></svg>Платежи</a>
+        <a href="#journal" data-pane="journal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18"
+            rx="2"/>
+          <path d="M9 8h6M9 12h6M9 16h4"/></svg>Журнал действий</a>
+        <a href="#broadcast" data-pane="broadcast"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2
+            6.5H4S6
+          14 6 9"/><path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg>Уведомления</a>
+        <a href="#reference" data-pane="reference"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+          Справочник нагрузок</a>
+        <a href="#price" data-pane="price"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V9m5 10V5m5 14v-7m5 7V8"/><path d="M3
+            21h18"/></svg>
+          Стоимость энергии</a>
+        <a href="/app"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>В редактор</a>
+        <a href="/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"
+          stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 2.5 15.4 0 18M12 3c-2.5
+          2.6-2.5 15.4 0 18"/></svg>На сайт</a>
+      </nav>
+      <div class="spacer"></div>
+      <div class="lang-slot" id="lang-slot"></div>
+      <div class="who">Вы вошли как<br><b id="admin-who" translate="no">—</b></div>
+      <button class="out" id="admin-out" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17v2a2 2 0 0 1-2 2H6a2 2 0 0
+        1-2-2V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2"/><path d="M20 12H10M17 9l3 3-3 3"/></svg>Выйти</button>
+    </aside>
+
+    <main class="main" id="main">
+      <section id="denied" hidden>
+        <div class="head"><div><h1>Раздел доступен только администратору</h1>
+          <div class="sub">Попросите администратора выдать вам права.</div></div></div>
+      </section>
+
+      <div id="desk" hidden>
+        <section class="pane" id="pane-overview" hidden>
+          <div class="head">
+            <div><h1>Обзор</h1><div class="sub">Панель администратора · две раздельные базы данных</div></div>
+            <span class="pill">администратор</span>
+          </div>
+          <div class="stats">
+            <div class="stat"><div class="v" id="s-users">—</div><div class="l">Пользователей</div></div>
+            <div class="stat"><div class="v" id="s-admins">—</div><div class="l">Администраторов</div></div>
+            <div class="stat"><div class="v" id="s-pro">—</div><div class="l">Тариф «Профессионал»</div></div>
+            <div class="stat"><div class="v" id="s-max">—</div><div class="l">Тариф «Максимум»</div></div>
+          </div>
+          <div class="stats two">
+            <div class="stat chart-card"><div class="l chart-title">Распределение по тарифам</div>
+              <div id="tier-chart"></div></div>
+            <div class="stat chart-card"><div class="l chart-title">Регистрации за 14 дней</div>
+              <div id="reg-chart"></div></div>
+          </div>
+          <div class="note-block">
+            <b>Безопасность хранения.</b> Учётные данные (почта и хэш пароля) и рабочие данные (профили, тарифы,
+            проекты, платежи) хранятся в <b>двух отдельных базах</b>: <span class="mono">credentials.db</span> и
+            <span class="mono">voltplan.db</span>. Пароли хранятся только как необратимый PBKDF2-хэш с солью —
+            посмотреть их нельзя ни здесь, ни в базе.
+          </div>
+          <div class="stats two">
+            <a class="stat" href="#users"><div class="v"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12"
+                cy="8"
+              r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div><div class="l"><b>Пользователи</b> — тариф и срок его
+              действия, права администратора.</div></a>
+            <a class="stat" href="#journal"><div class="v"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3"
+              width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div><div class="l"><b>Журнал
+              действий</b> — регистрация, вход, проекты, оплаты и действия администраторов.</div></a>
+          </div>
+        </section>
+
+        <section class="pane" id="pane-users" hidden>
+          <div class="head"><div><h1>Пользователи</h1><div class="sub">Тариф, срок его действия и права
+            администратора.</div></div></div>
+          <div class="panel">
+            <div class="panel-head"><h2>Учётные записи</h2>
+              <form id="users-search" class="row">
+                <input id="users-query" class="search" placeholder="Почта или имя" aria-label="Почта или имя">
+                <button class="btn" type="submit">Найти</button>
+              </form></div>
+            <div id="users" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="pane" id="pane-payments" hidden>
+          <div class="head"><div><h1>Платежи</h1><div class="sub">Последние 300 счетов всех пользователей. Полный номер
+            карты не хранится.</div></div></div>
+          <div class="panel"><div id="all-payments" class="table-wrap"></div></div>
+        </section>
+
+        <section class="pane" id="pane-journal" hidden>
+          <div class="head"><div><h1>Журнал действий</h1><div class="sub">Регистрация, вход, проекты, оплаты и действия
+            администраторов.</div></div></div>
+          <div class="panel">
+            <div class="panel-head"><h2>События</h2>
+              <form id="journal-search" class="row">
+                <input id="journal-query" class="search" placeholder="Фильтр по тексту" aria-label="Фильтр по тексту">
+                <button class="btn" type="submit">Показать</button>
+              </form></div>
+            <div id="journal" class="table-wrap"></div>
+          </div>
+        </section>
+
+        <section class="pane" id="pane-broadcast" hidden>
+          <div class="head"><div><h1>Уведомления</h1><div class="sub">Сообщение появится у пользователей в разделе
+            «Уведомления» и на значке колокольчика.</div></div></div>
+          <div class="panel">
+            <form id="broadcast-form" class="tf-form">
+              <label for="broadcast-text">Текст</label>
+              <textarea id="broadcast-text" class="tf-input" rows="3" maxlength="500"></textarea>
+              <label for="broadcast-user">Получатель</label>
+              <select id="broadcast-user" class="tf-input"></select>
+              <div class="form-foot"><button class="btn primary" type="submit">Отправить</button></div>
+            </form>
+          </div>
+        </section>
+
+        <section class="pane" id="pane-reference" hidden>
+          <div class="head"><div><h1>Справочник типовых нагрузок</h1><div class="sub">Значения по умолчанию для всех
+            проектов. Изменённые значения отмечены.</div></div></div>
+          <div class="panel">
+            <form id="reference-form" class="tf-form">
+              <div id="reference-fields"></div>
+              <h2 class="form-title">Суточные графики нагрузки по получасам</h2>
+              <p class="hint">48 значений через пробел: 00:00, 00:30, … 23:30.</p>
+              <div id="reference-curves"></div>
+              <div class="form-foot">
+                <button class="btn primary" type="submit">Сохранить справочник</button>
+                <button id="reference-reset" class="btn" type="button">Вернуть исходные значения</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <section class="pane" id="pane-price" hidden>
+          <div class="head"><div><h1>Стоимость электроэнергии</h1><div class="sub">Используется для стоимости годовых
+            потерь энергии в тарифе «Максимум».</div></div></div>
+          <div class="tf-hero">
+            <div class="tf-now">
+              <div class="tf-label">Действует сейчас</div>
+              <div class="tf-value"><span id="price-now" translate="no">—</span><span class="tf-cur">$</span></div>
+              <div class="tf-unit">за 1 кВт·ч</div>
+            </div>
+            <div class="tf-kpis">
+              <div class="tf-kpi"><div class="k">1 000 кВт·ч потерь в год</div><div class="v flat" id="kpi-small"
+                translate="no">—</div><div class="s">стоимость потерь за год</div></div>
+              <div class="tf-kpi"><div class="k">10 000 кВт·ч потерь в год</div><div class="v flat" id="kpi-large"
+                translate="no">—</div><div class="s">стоимость потерь за год</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <form id="price-form" class="tf-form">
+              <label for="price-value">Новая стоимость, $ за кВт·ч</label>
+              <input id="price-value" class="tf-input" inputmode="decimal">
+              <div class="tf-hint">Десятичный разделитель — запятая или точка.</div>
+              <div class="tf-preview" id="price-preview">—</div>
+              <div class="tf-err" id="price-error" role="alert"></div>
+              <button class="btn primary tf-save" type="submit">Сохранить</button>
+            </form>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/admin.js"></script>
+</body>
+</html>

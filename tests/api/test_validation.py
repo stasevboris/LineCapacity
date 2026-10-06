@@ -5,17 +5,15 @@ import time
 from urllib.parse import unquote
 
 import pytest
-from fastapi.testclient import TestClient
 
-from tests.helpers import SCHEMES, point
-from voltplan.app import create_app
+from tests.helpers import SCHEMES, point, signed_client
 from voltplan.exchange import cir
 from voltplan.scheme.model import Line, Scheme
 
 
 @pytest.fixture(scope="module")
-def client():
-    return TestClient(create_app())
+def client(tmp_path_factory):
+    return signed_client(tmp_path_factory.mktemp("site"))
 
 
 @pytest.fixture

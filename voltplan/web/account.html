@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Личный кабинет — VoltPlan</title>
+  <meta name="description" content="Личный кабинет VoltPlan: проекты, уведомления, тариф и платежи, свои марки,
+    учётная запись.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main" class="acc">
+    <h1>Личный кабинет</h1>
+
+    <div class="acc-hero reveal">
+      <div class="acc-hero-in">
+        <div class="avatar" id="avatar" translate="no">·</div>
+        <div class="acc-who">
+          <div class="em" id="acc-email" translate="no">—</div>
+          <div class="nm" id="who-name" translate="no"></div>
+          <span class="tier-chip" id="tier-chip"><span class="dot-ind"></span><span id="tier-name">—</span></span>
+          <span class="no-term" id="no-term" hidden>бессрочно</span>
+        </div>
+        <div class="term" id="term" hidden>
+          <div class="t-row"><span>Тариф действует до</span><b id="tier-until" translate="no">—</b></div>
+          <div class="bar"><i id="term-bar"></i></div>
+          <div class="t-row term-left"><span>Осталось дней</span><b id="days-left" translate="no">—</b></div>
+        </div>
+      </div>
+      <div class="cta">
+        <a class="btn btn-light" href="/tariffs" id="tier-cta">Изменить тариф</a>
+        <a class="btn btn-light" id="tier-renew" href="/pay" hidden>Продлить тариф</a>
+        <a class="btn btn-ghosty" href="/app">Открыть редактор</a>
+        <a class="btn btn-ghosty" href="/collab">Совместная работа<span class="count-chip" id="count-invitations"
+          hidden></span></a>
+        <a class="btn btn-ghosty" id="admin-link" href="/admin" hidden>Администрирование</a>
+      </div>
+    </div>
+
+    <div class="acc-grid">
+      <section class="acc-card wide reveal" id="projects">
+        <div class="card-head">
+          <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0
+              0 1-2
+            2H5a2 2 0 0 1-2-2z"/></svg></span><span id="projects-title">Проекты</span></h3>
+          <div class="seg" role="radiogroup" aria-label="Показать">
+            <label><input type="radio" name="archived" value="0" checked><span>Действующие</span></label>
+            <label><input type="radio" name="archived" value="1"><span>Архив</span></label>
+          </div>
+        </div>
+        <p class="hint">Свои проекты и проекты, открытые вашим командам.</p>
+        <form id="project-new" class="acc-row">
+          <div class="field">
+            <label for="project-name">Новый проект</label>
+            <input id="project-name" maxlength="120" placeholder="Название нового проекта" required>
+          </div>
+          <button class="btn btn-primary" type="submit">Создать проект</button>
+        </form>
+        <div id="projects-list" class="table-wrap projects-table"></div>
+      </section>
+
+      <section class="acc-card wide reveal" id="notifications">
+        <div class="card-head">
+          <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9"/>
+            <path d="M10 19.5a2.2 2.2 0 0 0 4 0"/></svg></span>Уведомления<span class="nav-count"
+              id="count-notifications"
+            hidden></span></h3>
+          <button id="notes-seen" class="btn btn-ghost btn-small" type="button">Отметить все прочитанными</button>
+        </div>
+        <div id="notes"></div>
+      </section>
+
+      <section class="acc-card wide reveal" id="payments">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></span>
+          История платежей</h3>
+        <div id="payments-list" class="table-wrap"></div>
+        <p class="hint">Полный номер карты не хранится — только маска.</p>
+      </section>
+
+      <section class="acc-card wide reveal" id="marks">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg></span>Свои марки</h3>
+        <p class="hint">Марки проводов и трансформаторов, которых нет в справочнике. Они появляются в справочнике
+          редактора с пометкой «моя». Доступны в тарифах «Профессионал» и «Максимум».</p>
+        <form id="line-mark">
+          <h4 class="form-title">Марка провода или кабеля</h4>
+          <div class="mark-grid">
+            <div class="field"><label for="lm-name">Марка</label><input id="lm-name" maxlength="255" required></div>
+            <div class="field"><label for="lm-phase">Rф, Ом/км</label><input id="lm-phase" inputmode="decimal"></div>
+            <div class="field"><label for="lm-zero">R0, Ом/км</label><input id="lm-zero" inputmode="decimal"></div>
+          </div>
+          <button class="btn btn-ghost" type="submit">Добавить марку провода</button>
+        </form>
+        <form id="transformer-mark">
+          <h4 class="form-title">Марка трансформатора</h4>
+          <div class="mark-grid">
+            <div class="field"><label for="tm-name">Марка</label><input id="tm-name" maxlength="255" required></div>
+            <div class="field"><label for="tm-rated">Sн, кВА</label><input id="tm-rated" inputmode="decimal"></div>
+            <div class="field"><label for="tm-idle">Pхх, кВт</label><input id="tm-idle" inputmode="decimal"></div>
+            <div class="field"><label for="tm-short">Pкз, кВт</label><input id="tm-short" inputmode="decimal"></div>
+            <div class="field"><label for="tm-high">Uвн, кВ</label><input id="tm-high" inputmode="decimal"
+              value="10"></div>
+            <div class="field"><label for="tm-low">Uнн, кВ</label><input id="tm-low" inputmode="decimal"
+              value="0,4"></div>
+            <div class="field"><label for="tm-impedance">Uк, %</label><input id="tm-impedance"
+              inputmode="decimal"></div>
+            <div class="field"><label for="tm-steps">Ступеней ПБВ</label><input id="tm-steps" inputmode="numeric"
+              value="5"></div>
+            <div class="field"><label for="tm-step">Шаг ПБВ, %</label><input id="tm-step" inputmode="decimal"
+              value="2,5"></div>
+          </div>
+          <button class="btn btn-ghost" type="submit">Добавить марку трансформатора</button>
+        </form>
+        <h4 class="form-title">Мои марки</h4>
+        <div id="own-marks"></div>
+      </section>
+
+      <section class="acc-card reveal" id="profile">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>
+          Учётная запись</h3>
+        <div class="kv"><span class="k">Почта (логин)</span><span id="kv-email" translate="no">—</span></div>
+        <div class="kv"><span class="k">Роль</span><span id="kv-role">—</span></div>
+        <div class="kv"><span class="k">Регистрация</span><span id="kv-created" translate="no">—</span></div>
+        <form id="profile-form" class="profile-form">
+          <div class="field">
+            <label for="profile-name">Отображаемое имя</label>
+            <input id="profile-name" maxlength="80" placeholder="(не задано)">
+          </div>
+          <div class="field">
+            <label for="profile-language">Язык интерфейса</label>
+            <select id="profile-language"></select>
+          </div>
+          <button class="btn btn-ghost" type="submit">Сохранить</button>
+          <div class="msg" id="profile-error" role="alert"></div>
+        </form>
+      </section>
+
+      <section class="acc-card reveal" id="password">
+        <h3><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+          stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+          </svg></span>Смена пароля</h3>
+        <form id="password-form">
+          <div class="field"><label for="password-current">Текущий пароль</label>
+            <input id="password-current" type="password" autocomplete="current-password" maxlength="128"></div>
+          <div class="field"><label for="password-new">Новый пароль (не короче 8 знаков, буквы и цифры)</label>
+            <input id="password-new" type="password" autocomplete="new-password" maxlength="128"></div>
+          <div class="field"><label for="password-repeat">Повторите новый пароль</label>
+            <input id="password-repeat" type="password" autocomplete="new-password" maxlength="128"></div>
+          <button class="btn btn-ghost" type="submit">Изменить пароль</button>
+          <div class="msg" id="password-error" role="alert"></div>
+        </form>
+        <p class="hint">После смены пароля другие открытые сеансы завершатся. Вход сохраняется в этом браузере на 7
+          дней.</p>
+        <button id="profile-logout" class="btn btn-danger btn-small" type="button">Выйти из учётной записи</button>
+      </section>
+    </div>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/account.js"></script>
+</body>
+</html>

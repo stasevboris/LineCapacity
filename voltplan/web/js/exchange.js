@@ -1,7 +1,7 @@
 import { api } from './api.js';
 import { fit } from './canvas.js';
 import { $, toast } from './dom.js';
-import { load, state } from './state.js';
+import { keptProject, load, state } from './state.js';
 
 function confirmDiscard() {
   return !state.dirty || confirm('В схеме есть несохранённые изменения. Продолжить без сохранения?');
@@ -15,7 +15,7 @@ export function openFile() {
 export async function importFile(file) {
   try {
     const result = await api.importCir(file);
-    load(result.scheme, result.name);
+    load(result.scheme, result.name, { project: keptProject() });
     requestAnimationFrame(fit);
     toast(`Открыт файл «${file.name}»`);
   } catch (error) {
@@ -69,8 +69,10 @@ export async function saveFile() {
     } else {
       download(blob, suggested);
     }
-    state.dirty = false;
-    $('dirty').hidden = true;
+    if (!state.project) {
+      state.dirty = false;
+      $('dirty').hidden = true;
+    }
     toast(`Схема сохранена в файл «${target ? target.name : suggested}»`);
   } catch (error) {
     toast(error.message, 'bad');

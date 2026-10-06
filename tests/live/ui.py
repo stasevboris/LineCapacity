@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import shutil
 import socket
+import tempfile
 import threading
 import time
+from pathlib import Path
 
 import uvicorn
 
+from tests.helpers import PASSWORD, fresh_email
 from voltplan.app import create_app
 from voltplan.exchange.cir import format_number
 
@@ -19,7 +23,9 @@ def free_port() -> int:
 class Server:
     def __init__(self) -> None:
         self.port = free_port()
-        config = uvicorn.Config(create_app(), host="127.0.0.1", port=self.port, log_level="warning")
+        self.data_dir = Path(tempfile.mkdtemp(prefix="voltplan-live-"))
+        self.app = create_app(self.data_dir)
+        config = uvicorn.Config(self.app, host="127.0.0.1", port=self.port, log_level="warning")
         self.server = uvicorn.Server(config)
         self.thread = threading.Thread(target=self.server.run, daemon=True)
 
@@ -37,6 +43,23 @@ class Server:
     def __exit__(self, *exc) -> None:
         self.server.should_exit = True
         self.thread.join(timeout=10)
+        shutil.rmtree(self.data_dir, ignore_errors=True)
+
+    def sign_up(self, context, email: str | None = None, name: str = "", tier: str = "max") -> dict:
+        response = context.request.post(self.url + "api/auth/register",
+                                        data={"email": email or fresh_email("live"), "password": PASSWORD,
+                                              "name": name})
+        assert response.ok, response.text()
+        card = response.json()
+        if tier != "demo":
+            self.app.state.site.users.set_tier(card["id"], tier, None)
+        return card
+
+    def editor(self, context, path: str = "app"):
+        self.sign_up(context)
+        page = context.new_page()
+        page.goto(self.url + path)
+        return page
 
 
 class EditorPage:

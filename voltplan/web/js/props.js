@@ -1,9 +1,11 @@
 import { $, formatNumber, h, toast } from './dom.js';
+import { t } from './i18n.js';
 import { run } from './dialogs.js';
 import { consumerSection, lineSection, poleSection, transformerSection } from './forms.js';
 import { transformerCharts } from './charts.js';
 import { resultsSection } from './results.js';
 import { selectedObject, state } from './state.js';
+import { computeAllowed } from './tools.js';
 
 const TITLES = { transformer: 'Трансформатор', line: 'ЛЭП', pole: 'Опора', consumer: 'Потребитель' };
 const LINE_KINDS = ['outgoing', 'span', 'branch_line', 'branch_consumer'];
@@ -29,8 +31,8 @@ function describe(kind, obj) {
   if (kind === 'transformer') {
     return {
       section: transformerSection(obj),
-      subtitle: `R ${formatNumber(obj.r_ohm, 5)} Ом · X ${formatNumber(obj.x_ohm, 5)} Ом · `
-        + `Kт ${formatNumber(obj.kt, 3)}`,
+      subtitle: t('R {r} Ом · X {x} Ом · Kт {kt}', { r: formatNumber(obj.r_ohm, 5), x: formatNumber(obj.x_ohm, 5),
+        kt: formatNumber(obj.kt, 3) }),
     };
   }
   if (kind === 'line') return { section: lineSection(obj), subtitle: feederText(obj.feeder_no) };
@@ -41,6 +43,19 @@ function describe(kind, obj) {
     };
   }
   return { section: consumerSection(obj, { phase: obj }), subtitle: feederText(obj.feeder_no) };
+}
+
+function allowedBlock(index) {
+  const results = state.results;
+  if (!results) return null;
+  const ready = results.period === 2 && results.good && !results.allowedDone;
+  const reason = results.period !== 2 ? 'Доступно после расчёта по двум периодам'
+    : !results.good ? 'Доступно, если пропускная способность сети достаточна'
+      : results.allowedDone ? 'Выполните расчёт снова, чтобы определить допустимую мощность ещё раз' : '';
+  const button = h('button', { class: 'btn', type: 'button', id: 'btn-allowed', disabled: !ready, title: reason || null,
+    onclick: () => { button.disabled = true; computeAllowed(index); } },
+  'Рассчитать допустимую мощность потребителя');
+  return h('div', { class: 'props-actions allowed' }, button, reason ? h('span', { class: 'muted' }, reason) : null);
 }
 
 export function renderProps() {
@@ -66,8 +81,9 @@ export function renderProps() {
     }
     await apply({ kind: 'update', target: kind, index, fields }, 'Параметры изменены');
   });
-  const buttons = [applyButton];
-  if (kind === 'pole') {
+  const buttons = state.readOnly ? [] : [applyButton];
+  if (state.readOnly) section.el.querySelectorAll('input, select, button').forEach((el) => { el.disabled = true; });
+  if (kind === 'pole' && !state.readOnly) {
     buttons.push(h('button', {
       class: 'btn', type: 'button',
       onclick: () => {
@@ -77,7 +93,7 @@ export function renderProps() {
       },
     }, 'Добавить ответвление'));
   }
-  if (kind !== 'transformer') {
+  if (kind !== 'transformer' && !state.readOnly) {
     buttons.push(h('button', {
       class: 'btn btn-danger', type: 'button',
       onclick: () => {
@@ -92,8 +108,9 @@ export function renderProps() {
     h('p', { class: 'props-sub' }, subtitle),
     section.el,
     error,
-    h('div', { class: 'props-actions' }, buttons),
+    buttons.length ? h('div', { class: 'props-actions' }, buttons) : null,
     resultsSection(kind, index),
+    kind === 'consumer' ? allowedBlock(index) : null,
     kind === 'transformer' ? transformerCharts() : null,
   ];
   box.replaceChildren(...parts.filter(Boolean));

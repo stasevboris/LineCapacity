@@ -43,8 +43,7 @@ def browser():
 @pytest.fixture
 def editor(server, browser):
     context = browser.new_context(viewport={"width": 1440, "height": 900}, accept_downloads=True)
-    page = context.new_page()
-    page.goto(server.url)
+    page = server.editor(context)
     page.wait_for_selector("#empty:not([hidden])")
     wrapper = EditorPage(page)
     yield wrapper
@@ -177,8 +176,10 @@ def test_dark_theme(editor):
     editor.page.click("#btn-theme")
     assert editor.page.evaluate("document.documentElement.dataset.theme") == "dark"
     editor.page.wait_for_timeout(400)
-    background = editor.page.locator("#btn-new").evaluate("el => getComputedStyle(el).backgroundColor")
+    background = editor.page.locator(".panel-right").evaluate("el => getComputedStyle(el).backgroundColor")
     assert background == "rgb(17, 26, 46)"
+    bar = editor.page.locator(".top").evaluate("el => getComputedStyle(el).backgroundColor")
+    assert bar == "rgb(15, 23, 42)"
     shot(editor, "09-тёмная-тема")
     assert editor.errors == []
 
@@ -225,8 +226,7 @@ def test_every_line_offers_phase_choice(editor):
 
 def test_narrow_window_shows_notice(browser, server):
     context = browser.new_context(viewport={"width": 390, "height": 800})
-    page = context.new_page()
-    page.goto(server.url)
+    page = server.editor(context)
     assert page.locator(".narrow").is_visible()
     assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     SHOTS.mkdir(parents=True, exist_ok=True)
@@ -282,7 +282,8 @@ def test_calc_shows_linecapacity_results(editor):
     editor.page.locator("#results-bar label", has_text="Мин. нагрузки").click()
     assert sorted(shown_labels(editor.page)) == sorted(expected_labels(expected["labels"]["2"]))
     editor.click_object("consumer", 0, zoom=6)
-    assert editor.page.locator("#props .memo").inner_text() == "\n".join(expected["memo"]["consumers"][0])
+    lines = editor.page.locator("#props .memo .memo-line").all_inner_texts()
+    assert [line.strip() for line in lines] == [line.strip() for line in expected["memo"]["consumers"][0]]
     shot(editor, "14-результаты-потребителя")
     editor.page.click("#btn-hide-results")
     assert editor.page.locator("#results-bar").is_hidden()

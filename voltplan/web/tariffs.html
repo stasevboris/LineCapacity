@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тарифы — VoltPlan</title>
+  <meta name="description" content="Тарифы VoltPlan: «Демо» бесплатно, «Профессионал» и «Максимум» на 30 дней.
+    Пределы проектов и схем, свои марки, DOCX, эпюра и годовые потери.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main">
+  <header class="hero hero-page">
+    <div class="container centered">
+      <span class="kicker">Тарифы</span>
+      <h1>Простые планы для любой задачи</h1>
+      <p class="lead">«Демо» — бесплатно и без срока. Старшие тарифы оплачиваются банковской картой за минуту и
+        действуют 30 дней; цены в долларах США.</p>
+    </div>
+  </header>
+
+  <section class="block block-quiz">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Подбор за минуту</span>
+        <h2>Не уверены, какой тариф нужен?</h2>
+        <p>Ответьте на шесть коротких вопросов — подскажем подходящий план.</p>
+      </div>
+      <div class="quiz reveal">
+        <div class="quiz-progress"><span id="quiz-bar"></span></div>
+        <div class="quiz-steps">
+          <div class="quiz-q" data-q="size">
+            <p>1. Какого размера сети вы строите?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="s">Небольшие, до 40 потребителей</button>
+              <button class="quiz-opt" type="button" data-v="l">Крупнее, до 598 потребителей</button>
+            </div>
+          </div>
+          <div class="quiz-q" data-q="usage">
+            <p>2. Для чего вам VoltPlan?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="try">Проба, учёба, знакомство</button>
+              <button class="quiz-opt" type="button" data-v="work">Рабочее проектирование</button>
+            </div>
+          </div>
+          <div class="quiz-q" data-q="projects">
+            <p>3. Сколько проектов вы будете вести?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="few">Один-два</button>
+              <button class="quiz-opt" type="button" data-v="many">Больше двух</button>
+            </div>
+          </div>
+          <div class="quiz-q" data-q="marks">
+            <p>4. Нужны свои марки проводов и трансформаторов или отчёт DOCX?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="no">Нет, хватит справочника</button>
+              <button class="quiz-opt" type="button" data-v="yes">Да, нужны</button>
+            </div>
+          </div>
+          <div class="quiz-q" data-q="analysis">
+            <p>5. Нужны эпюра напряжения и годовые потери энергии?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="no">Нет, достаточно расчёта режима</button>
+              <button class="quiz-opt" type="button" data-v="yes">Да, анализирую потери</button>
+            </div>
+          </div>
+          <div class="quiz-q" data-q="team">
+            <p>6. Вы создаёте команды с общими проектами?</p>
+            <div class="opts">
+              <button class="quiz-opt" type="button" data-v="no">Нет, работаю один</button>
+              <button class="quiz-opt" type="button" data-v="yes">Да, руковожу командой</button>
+            </div>
+          </div>
+        </div>
+        <div class="quiz-result" id="quiz-result">
+          <div class="rk">Рекомендация</div>
+          <h3 id="qr-name">—</h3>
+          <p id="qr-why"></p>
+          <a class="btn btn-primary" id="qr-cta" href="#plans">Перейти к тарифу</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Тарифы</span>
+        <h2>Выберите план</h2>
+        <p>«Демо» бесплатен всегда. Старшие тарифы включаются на 30 дней после оплаты; повторная оплата продлевает срок
+          от конца текущего.</p>
+      </div>
+      <div id="plans" class="pricing"><p>Загрузка тарифов…</p></div>
+      <p id="status" class="auth-alt"></p>
+      <p class="auth-alt muted">Оплата проводится в демонстрационном режиме или в тестовой среде bePaid: настоящие
+        деньги не списываются.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Размер схемы</span>
+        <h2>Сколько потребителей помещается в тариф</h2>
+        <p>«Демо» рассчитан на небольшие схемы. «Профессионал» и «Максимум» принимают схему предельного для LineCapacity
+          размера, а «Максимум» добавляет к ней эпюру напряжения и годовые потери.</p>
+      </div>
+      <div class="scene3d scene-anim reveal">
+        <canvas id="anim-tiers" role="img"
+          aria-label="Растущая сеть потребителей вокруг трансформаторной подстанции. Пунктирные окружности отмечают
+            пределы
+            тарифов: 40 потребителей у «Демо», 598 у «Профессионала», у «Максимума» те же 598 и вдобавок эпюра
+            напряжения и годовые потери."></canvas>
+        <div class="scene-cap">
+          <span class="scene-tag">Пределы</span>
+          <span>Демо — 40 · Профессионал — 598 · Максимум — 598 <b>и эпюра, годовые потери</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Сравнение</span>
+        <h2>Что входит в каждый тариф</h2>
+      </div>
+      <div class="cmp-wrap reveal"><table class="cmp" id="cmp"><tbody><tr><td>Загрузка…</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Оплата и условия</span>
+        <h2>Частые вопросы о тарифах</h2>
+      </div>
+      <div class="faq-list reveal narrow-list">
+        <details class="faq-item"><summary>Нужна ли карта для «Демо»?</summary>
+          <div class="faq-a">Нет. «Демо» бесплатен без срока, регистрация занимает минуту и не требует привязки
+            карты.</div></details>
+        <details class="faq-item"><summary>Как оплачиваются старшие тарифы?</summary>
+          <div class="faq-a">Банковской картой на странице оплаты: Visa, Mastercard, МИР, БЕЛКАРТ, Maestro, American
+            Express, UnionPay — или на защищённой странице bePaid в тестовой среде. Форма проверяет номер, срок и код
+            безопасности; полный номер карты не сохраняется, в истории остаётся только маска. Тариф действует 30 дней,
+            повторная оплата продлевает срок.</div></details>
+        <details class="faq-item"><summary>Можно ли поменять тариф позже?</summary>
+          <div class="faq-a">Да. Перейти на старший тариф можно в любой момент, оплатив его на этой странице.
+            Младший тариф оплачивается после окончания действующего старшего, чтобы оплаченные дни не пропали. Когда
+            срок тарифа заканчивается, учётная запись возвращается на «Демо».</div></details>
+        <details class="faq-item"><summary>Что будет с проектами при смене тарифа?</summary>
+          <div class="faq-a">Проекты остаются с вами. Пределы нового тарифа действуют на создание проектов и вариантов
+            и на расчёт схемы.</div></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Начните с бесплатного «Демо»</h2>
+        <p>Попробуйте VoltPlan без оплаты и привязки карты. Перейти на старший тариф можно в один клик.</p>
+        <a class="btn btn-light btn-lg" id="cta-band" href="/register">Создать аккаунт</a>
+      </div>
+    </div>
+  </section>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="/js/scenes.js" defer></script>
+  <script type="module" src="/js/tariffs.js"></script>
+</body>
+</html>

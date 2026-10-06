@@ -173,7 +173,7 @@ export function lineSection(values, { own = values, single = null, title = 'ЛЭ
       } catch (error) {
         rows = [];
       }
-      if (asked === markAsked) info.textContent = rows.join('\n');
+      if (asked === markAsked) info.replaceChildren(...rows.map((row) => h('div', {}, row)));
     }, pause);
   };
   type.addEventListener('input', () => describe());

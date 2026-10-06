@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Оплата тарифа — VoltPlan</title>
+  <meta name="description" content="Оплата тарифа VoltPlan банковской картой или через тестовую среду bePaid.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main" class="pay-wrap">
+    <h1 class="pay-title">Оплата тарифа</h1>
+    <p class="muted pay-lead">Данные карты используются только для проверки и не сохраняются.</p>
+
+    <div class="steps-line">
+      <span class="step-dot done"><i>✓</i>Выбор тарифа</span>
+      <span class="dash"></span>
+      <span class="step-dot now" id="step-pay"><i>2</i>Оплата</span>
+      <span class="dash"></span>
+      <span class="step-dot" id="step-done"><i>3</i>Готово</span>
+    </div>
+
+    <div class="pay-grid">
+      <div class="pay-card order-card">
+        <h3>Ваш заказ</h3>
+        <div id="order"></div>
+        <div class="secure-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8
+              0v3"/></svg>
+          <span>Платёж защищён: номер карты и код CVV не сохраняются и не передаются третьим сторонам — в истории
+            платежей остаётся только маска. Настоящие деньги не списываются.</span>
+        </div>
+      </div>
+
+      <div class="pay-card">
+        <div id="methods">
+          <div class="seg pay-methods" role="radiogroup" aria-label="Способ оплаты">
+            <label><input type="radio" name="method" value="demo" checked><span>Карта</span></label>
+            <label><input type="radio" name="method" value="bepaid"><span>bePaid</span></label>
+          </div>
+
+          <form id="card-form" novalidate autocomplete="off">
+            <h3>Данные карты</h3>
+            <div class="cf-field">
+              <label for="card-number">Номер карты</label>
+              <input id="card-number" inputmode="numeric" maxlength="23" placeholder="0000 0000 0000 0000"
+                translate="no">
+              <span id="card-brand" class="cf-badge" translate="no"></span>
+            </div>
+            <div class="cf-cols">
+              <div class="cf-field">
+                <label for="card-expiry">Срок действия (ММ/ГГ)</label>
+                <input id="card-expiry" inputmode="numeric" maxlength="5" placeholder="12/29" translate="no">
+              </div>
+              <div class="cf-field">
+                <label for="card-cvv">CVV</label>
+                <input id="card-cvv" inputmode="numeric" maxlength="4" type="password" placeholder="•••">
+              </div>
+            </div>
+            <div class="cf-field">
+              <label for="card-holder">Имя держателя (латиницей)</label>
+              <input id="card-holder" maxlength="60" autocapitalize="characters" placeholder="IVAN IVANOV"
+                translate="no">
+            </div>
+            <div id="card-error" class="cf-err" role="alert"></div>
+            <button id="btn-pay" class="btn btn-primary" type="submit"></button>
+          </form>
+
+          <div id="bepaid-box" hidden>
+            <h3>Тестовая среда bePaid</h3>
+            <p class="muted">Оплата пройдёт на защищённой странице bePaid в тестовой среде: реальных списаний нет. После
+              оплаты вы вернётесь сюда автоматически.</p>
+            <div id="bepaid-error" class="cf-err" role="alert"></div>
+            <button id="btn-bepaid" class="btn btn-primary" type="button">Перейти к оплате bePaid</button>
+          </div>
+        </div>
+
+        <div id="outcome" class="pay-outcome" hidden></div>
+      </div>
+    </div>
+    <p class="muted pay-back"><a href="/tariffs">← Все тарифы</a></p>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/pay.js"></script>
+</body>
+</html>

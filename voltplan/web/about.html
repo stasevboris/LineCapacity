@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>О продукте — VoltPlan</title>
+  <meta name="description" content="VoltPlan — веб-приложение для построения и расчёта схем воздушных сетей 0,4 кВ,
+    взаимозаменяемое с LineCapacity по формату .cir и результатам расчёта.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main">
+  <header class="hero hero-page">
+    <div class="container">
+      <span class="kicker">О продукте</span>
+      <h1>Ручное построение схемы над расчётным ядром, совместимым с LineCapacity</h1>
+      <p class="lead">VoltPlan переносит в браузер привычную работу инженера с LineCapacity и добавляет то, чего в
+        настольной программе нет: проекты на сервере, варианты, сценарии и совместную работу.</p>
+    </div>
+  </header>
+
+  <section class="stats">
+    <div class="container">
+      <div class="stat"><div class="num" data-count="48">48</div>
+        <div class="lbl">расчётов LineCapacity 1.27 сверены построчно с VoltPlan</div></div>
+      <div class="stat"><div class="num" data-count="122">122</div>
+        <div class="lbl">прямых сверок с LineCapacity через её интерфейс</div></div>
+      <div class="stat"><div class="num" data-count="1164">1164</div>
+        <div class="lbl">автоматические проверки во всех наборах</div></div>
+      <div class="stat"><div class="num">3</div>
+        <div class="lbl">языка интерфейса: русский, английский, китайский</div></div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="hero-grid aligned">
+        <div class="section-head reveal flush">
+          <span class="kicker">Назначение</span>
+          <h2>Схема сети — на холсте, расчёт — на сервере</h2>
+          <p>VoltPlan — веб-приложение для построения, изменения и расчёта схем радиальных воздушных сетей 0,4 кВ.
+            Пользователь строит схему на холсте от точек присоединения, сервер ведёт её по правилам LineCapacity и
+            рассчитывает режим: напряжения у потребителей, нагрев проводов и трансформатора, потери мощности и
+            заключение о пропускной способности.</p>
+        </div>
+        <div class="shot reveal">
+          <img src="/shots/overview.png" width="1440" height="900" loading="lazy"
+            alt="Редактор VoltPlan: схема сети на холсте, панель точек присоединения и свойств">
+          <div class="cap">Редактор схемы VoltPlan</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="kicker">Как это выглядит в работе</span>
+        <h2>Пять действий — готовая схема</h2>
+        <p>Схема строится от точек присоединения: трансформатор, отходящие линии, ответвление, вводы к потребителям.
+          В конце — расчёт клавишей F7, и результаты появляются прямо на схеме.</p>
+      </div>
+      <div class="scene3d scene-anim reveal">
+        <canvas id="anim-build" role="img"
+          aria-label="Схема сети 0,4 кВ строится действиями редактора: сначала появляется трансформаторная подстанция,
+            затем две линии по шесть опор, ответвление от опоры 1/3, двенадцать потребителей, и в конце по схеме
+            проходит волна расчёта — узлы становятся зелёными, выводится Umin и подтверждение связности."></canvas>
+        <div class="scene-cap">
+          <span class="scene-tag">Редактор</span>
+          <span>условный пример · каждое действие — одно окно редактора · в конце — расчёт и проверка
+            <b>связности</b></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="section-head reveal"><span class="kicker">Архитектура</span><h2>Строго слоистая структура</h2>
+        <p>Расчётное ядро и редактор схемы не зависят от интерфейса. Браузер только показывает схему и окна; построение,
+          расчёт, хранение проектов и оплата — на сервере.</p></div>
+      <div class="flow reveal">
+        <div class="node"><span class="step-n">L1</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div>
+          <b>Браузер</b><span>Холст SVG, окна объектов, кабинет — HTML, CSS и JavaScript без сборки.</span></div>
+        <div class="node"><span class="step-n">L2</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+          <b>API FastAPI</b><span>Схема в JSON, проекты, расчёт, оплата и администрирование.</span></div>
+        <div class="node"><span class="step-n">L3</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          <path d="M10 6.5h4a2 2 0 0 1 2 2V14"/></svg></div>
+          <b>Редактор схемы</b><span>Построение, правка и удаление объектов по правилам LineCapacity.</span></div>
+        <div class="node"><span class="step-n">L4</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20V10M10 20V4M16 20v-8M20 20V8"/></svg></div>
+          <b>Расчётное ядро</b><span>Режим сети, нагрев, потери, допустимая мощность потребителя.</span></div>
+        <div class="node"><span class="step-n">L5</span><div class="ic"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg></div>
+          <b>Формат .cir</b><span>Чтение и запись файлов, совместимых с LineCapacity.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="container">
+      <div class="cards">
+        <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 8.5 8 11
+            4.6-2.5 8-6 8-11V5z"/>
+          <path d="m9 12 2 2 4-4"/></svg></div>
+          <h3>Раздельное хранение</h3><p>Почта и хэш пароля лежат в одной базе SQLite, профили, проекты и платежи — в
+            другой. Пароль хранится только как PBKDF2-хэш с солью, вход защищён паузой после неудачных
+              попыток.</p></div>
+        <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6"/></svg></div>
+          <h3>Совместимость .cir</h3><p>Кодировка cp1251, запятая-разделитель, те же номера точек присоединения. Схемы
+            VoltPlan открываются и считаются в LineCapacity с теми же результатами.</p></div>
+        <div class="card reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+          stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+          <h3>Многоуровневое тестирование</h3><p>Модульные и API-проверки, живые сценарии в Chrome с несколькими
+            пользователями и прямая сверка с LineCapacity через её окна.</p></div>
+      </div>
+      <div class="section-head center reveal tech-head"><span class="kicker">Технологии</span>
+        <h2>Из чего собрано приложение</h2></div>
+      <div class="cmds reveal centered">
+        <span class="cmd">Python 3.11</span><span class="cmd">FastAPI</span><span class="cmd">Uvicorn</span>
+        <span class="cmd">pydantic</span><span class="cmd">NumPy · SciPy</span><span class="cmd">SQLite ×2</span>
+        <span class="cmd">HTML · CSS · JavaScript</span><span class="cmd">SVG-холст</span><span
+          class="cmd">openpyxl</span>
+        <span class="cmd">PBKDF2</span><span class="cmd">pytest</span><span class="cmd">Playwright</span>
+        <span class="cmd">pywinauto (сверка)</span><span class="cmd">bePaid (тестовая среда)</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="container">
+      <div class="cta-band reveal">
+        <h2>Откройте редактор</h2>
+        <p>Тариф «Демо» бесплатен и не требует привязки карты.</p>
+        <a class="btn btn-light btn-lg" href="/register">Создать аккаунт</a>
+      </div>
+    </div>
+  </section>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script src="/js/scenes.js" defer></script>
+  <script type="module" src="/js/page.js"></script>
+</body>
+</html>

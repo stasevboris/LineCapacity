@@ -16,6 +16,10 @@ FIELDS = {
     "end_x": "конец x", "end_y": "конец y", "point_kind": "тип точки", "object_no": "номер объекта точки",
     "branch_no": "номер ответвления", "active": "активность", "spare": "резерв удалённых объектов",
     "block": "состояние для отмены",
+    "email": "почта", "password": "пароль", "current": "текущий пароль", "new": "новый пароль",
+    "language": "язык", "archived": "архив", "source": "исходный вариант", "variant": "вариант",
+    "team": "команда", "role": "роль", "accept": "ответ", "ids": "уведомления", "to_user": "получатель",
+    "user_id": "собеседник",
 }
 LISTS = {"lines": "ЛЭП", "poles": "опора", "consumers": "потребитель", "connection_points": "присоединение"}
 SECTIONS = {"transformer": "трансформатор", "line": "ЛЭП", "pole": "опора", "consumer": "потребитель"}

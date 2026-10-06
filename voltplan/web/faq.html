@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Вопросы и ответы — VoltPlan</title>
+  <meta name="description" content="Ответы на частые вопросы о VoltPlan: построение схемы, совместимость с
+    LineCapacity, тарифы, безопасность данных и развёртывание.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main">
+  <header class="hero hero-page compact">
+    <div class="container centered">
+      <span class="kicker">Поддержка</span>
+      <h1>Частые вопросы</h1>
+      <p class="lead">Коротко о главном. Не нашли ответ — спросите консультанта или загляните в документацию
+        проекта.</p>
+    </div>
+  </header>
+
+  <section class="block">
+    <div class="container narrow">
+      <div class="section-head reveal faq-head"><span class="kicker">Начало работы</span></div>
+      <div class="faq-list reveal">
+        <details class="faq-item" open><summary>Нужно ли что-то устанавливать?</summary>
+          <div class="faq-a">Нет. Достаточно браузера: Chrome, Edge или Firefox. Зарегистрируйтесь, откройте редактор и
+            начните с новой схемы или с файла .cir из LineCapacity.</div></details>
+        <details class="faq-item"><summary>Как построить схему? С чего начать?</summary>
+          <div class="faq-a">Нажмите «Новая схема»: задайте трансформатор и первую отходящую линию. Дальше выбирайте
+            синюю точку присоединения на схеме и действие слева — пролёт, ответвление, потребитель. Готовую схему
+            можно сохранить в файл .cir или в проект на сервере.</div></details>
+        <details class="faq-item"><summary>Какие файлы можно открыть?</summary>
+          <div class="faq-a">В редакторе — схемы .cir LineCapacity. В меню «Расчёт» — книгу Excel с получасовыми
+            показаниями АСКУЭ. В переписке можно передать любой файл до 5 МБ, кроме исполняемых.</div></details>
+      </div>
+
+      <div class="section-head reveal faq-head"><span class="kicker">Точность и надёжность</span></div>
+      <div class="faq-list reveal">
+        <details class="faq-item"><summary>Насколько расчёт совпадает с LineCapacity?</summary>
+          <div class="faq-a">Отчёт «Основные результаты» и окна объектов совпадают с LineCapacity 1.27 построчно на
+            записанных расчётах реальных сельских сетей. Проверочный набор управляет самой LineCapacity через её
+            окна и сравнивает тексты, а не пересказывает их.</div></details>
+        <details class="faq-item"><summary>Что будет, если схема собрана с ошибкой?</summary>
+          <div class="faq-a">Окно объекта не принимает неверные значения — как в LineCapacity. Если ошибка пришла из
+            файла (потребитель или опора без ЛЭП, ЛЭП нулевой длины), расчёт не начинается, а сообщение называет
+            причину.</div></details>
+        <details class="faq-item"><summary>Совместимы ли схемы с LineCapacity?</summary>
+          <div class="faq-a">Да. Формат .cir полностью совместим: кодировка cp1251, запятая как десятичный
+            разделитель, те же номера точек присоединения. Схемы, построенные в VoltPlan, открываются и считаются
+            в LineCapacity с теми же результатами.</div></details>
+      </div>
+
+      <div class="section-head reveal faq-head"><span class="kicker">Тарифы, данные, развёртывание</span></div>
+      <div class="faq-list reveal">
+        <details class="faq-item"><summary>Чем отличаются тарифы?</summary>
+          <div class="faq-a">«Демо» — бесплатно: до двух проектов, схемы до 40 опор и 40 потребителей. «Профессионал» —
+            до 50 проектов, схемы до 299 опор и 598 потребителей, свои марки проводов и трансформаторов, отчёт
+            DOCX. «Максимум» — вдобавок эпюра напряжения, годовые потери энергии и создание команд. Подробности — на
+            странице «Тарифы».</div></details>
+        <details class="faq-item"><summary>Это безопасно? Где хранятся мои данные?</summary>
+          <div class="faq-a">Пароль хранится только как необратимый PBKDF2-хэш с солью — восстановить его нельзя.
+            Почта и пароль лежат в отдельной базе от проектов и профиля. Сеанс хранится в подписанной cookie с
+            признаком HttpOnly; после нескольких неудачных попыток вход приостанавливается.</div></details>
+        <details class="faq-item"><summary>Можно ли развернуть сервис у себя?</summary>
+          <div class="faq-a">Да. Нужен Python 3.11: установите пакет и выполните «python -m voltplan». Данные хранятся в
+            папке, заданной переменной VOLTPLAN_DATA; администратора назначает команда «python -m voltplan
+            --make-admin почта». Подробности — в документации проекта.</div></details>
+      </div>
+
+      <div class="cta-band reveal faq-band">
+        <h2>Не нашли ответ?</h2>
+        <p>Спросите консультанта — кнопка в правом нижнем углу. Он подскажет по возможностям, тарифам и порядку
+          работы.</p>
+        <a class="btn btn-light btn-lg" href="/register">Начать бесплатно</a>
+      </div>
+    </div>
+  </section>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/page.js"></script>
+</body>
+</html>

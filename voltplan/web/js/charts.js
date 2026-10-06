@@ -1,4 +1,5 @@
 import { h, s } from './dom.js';
+import { t } from './i18n.js';
 import { state } from './state.js';
 
 const W = 288;
@@ -98,8 +99,9 @@ function temperatureChart(winding, oil) {
   if (oil) svg.append(s('path', { d: path(oil, range), class: 'chart-line oil' }));
   winding.forEach((value, slot) => {
     const hit = s('rect', { x: PAD.left + slot * slotW, y: PAD.top, width: slotW, height: plotH, class: 'chart-hit' });
-    const parts = [`${clock(slot)}`, `обмотки ${Number.isFinite(value) ? comma(value, 1) : '—'} °C`];
-    if (oil) parts.push(`масло ${Number.isFinite(oil[slot]) ? comma(oil[slot], 1) : '—'} °C`);
+    const parts = [`${clock(slot)}`,
+      t('обмотки {value} °C', { value: Number.isFinite(value) ? comma(value, 1) : '—' })];
+    if (oil) parts.push(t('масло {value} °C', { value: Number.isFinite(oil[slot]) ? comma(oil[slot], 1) : '—' }));
     hit.append(s('title', {}, parts.join(' — ')));
     svg.append(hit);
   });

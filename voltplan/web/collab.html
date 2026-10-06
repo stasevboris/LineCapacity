@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Совместная работа — VoltPlan</title>
+  <meta name="description" content="Команды и общие проекты, друзья и переписка с файлами в VoltPlan.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main" class="cw">
+    <header class="cw-hero">
+      <span class="cw-kicker">Вместе над схемой</span>
+      <h1>Совместная работа</h1>
+      <p class="cw-lead">Три способа работать не в одиночку: команда с общими проектами, друзья для быстрой связи и
+        переписка с пересылкой схем и заданий. Друзья, переписка и участие в командах доступны на любом тарифе, создание
+        команд — в тарифе «Максимум».</p>
+    </header>
+
+    <div class="cw-sechead" id="teams">
+      <span class="cw-num">01</span>
+      <div>
+        <h2>Команды и общие проекты</h2>
+        <p>Владелец создаёт команду, приглашает участников по почте и выдаёт роли. Проект, открытый команде, видят все
+          её участники: редактор сохраняет изменения, читатель только смотрит и считает.</p>
+      </div>
+    </div>
+
+    <section id="pane-teams">
+      <div class="cw-grid">
+        <div class="cw-card">
+          <h2>Мои команды</h2>
+          <div id="teams-list"></div>
+          <form id="team-new" class="cw-row">
+            <input type="text" id="team-name" maxlength="120" placeholder="Название команды" aria-label="Название
+              команды"
+              required>
+            <button class="cw-act" type="submit">Создать</button>
+          </form>
+        </div>
+        <div class="cw-card" id="invitations">
+          <h2>Приглашения<span class="nav-count" id="count-invitations" hidden></span></h2>
+          <div id="incoming"></div>
+          <form id="invite-form" class="cw-row">
+            <input type="email" id="invite-email" maxlength="254" placeholder="Почта участника"
+              aria-label="Почта участника" required>
+            <select id="invite-target" aria-label="Куда пригласить"></select>
+            <select id="invite-role" aria-label="Роль">
+              <option value="editor">редактор</option>
+              <option value="reader">читатель</option>
+            </select>
+            <button class="cw-act" type="submit">Пригласить</button>
+          </form>
+          <h2 class="cw-subhead">Отправленные приглашения</h2>
+          <div id="outgoing"></div>
+          <h2 class="cw-subhead">Общие проекты</h2>
+          <div id="shared-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cw-divider" aria-hidden="true"><span></span><i></i><span></span></div>
+
+    <div class="cw-sechead" id="friends">
+      <span class="cw-num">02</span>
+      <div>
+        <h2>Друзья</h2>
+        <p>Личная связь без команды: приглашение по почте, согласие второй стороны — и можно переписываться. Без
+          взаимного согласия писать нельзя, поэтому непрошеных сообщений здесь не бывает.</p>
+      </div>
+    </div>
+
+    <section id="pane-friends">
+      <div class="cw-grid">
+        <div class="cw-card">
+          <h2>Мои друзья</h2>
+          <div id="friends-list"></div>
+          <form id="friend-invite" class="cw-row">
+            <input type="email" id="friend-email" maxlength="254" placeholder="Почта друга" aria-label="Почта друга"
+              required>
+            <button class="cw-act" type="submit">Добавить</button>
+          </form>
+        </div>
+        <div class="cw-card">
+          <h2>Как это работает</h2>
+          <p class="cw-muted">Приглашение приходит в уведомления и в раздел «Приглашения» выше. Переписываться можно
+            только со взаимными друзьями и участниками своих команд — так никто не получит сообщение от незнакомого
+            человека.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="cw-divider" aria-hidden="true"><span></span><i></i><span></span></div>
+
+    <div class="cw-sechead" id="chat">
+      <span class="cw-num">03</span>
+      <div>
+        <h2>Переписка с вложениями</h2>
+        <p>Сообщения команде или другу, к каждому можно приложить файл — схему <b>.cir</b>, книгу Excel, скан или
+          документ — до 5 МБ, кроме исполняемых. Переписка хранится на сервере и видна только её участникам.</p>
+      </div>
+    </div>
+
+    <section id="pane-chat">
+      <div class="cw-grid">
+        <div class="cw-card">
+          <h2>С кем говорим</h2>
+          <div id="chat-targets"></div>
+        </div>
+        <div class="cw-card cw-chat">
+          <div class="cw-chat-head">
+            <h2 id="chat-title">Переписка</h2>
+            <span class="cw-pill">до 5 МБ</span>
+          </div>
+          <div class="cw-feed" id="chat-feed"></div>
+          <div class="cw-attach" id="chat-attach" hidden>
+            <span class="cw-clip" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0
+                1-7-7l8-8a3.5
+              3.5 0 0 1 5 5l-8 8a2 2 0 0 1-3-3l7.5-7.5"/></svg></span>
+            <b id="chat-attach-name" translate="no"></b>
+            <span class="cw-attach-size" id="chat-attach-size" translate="no"></span>
+            <button type="button" class="cw-attach-off" id="chat-attach-off" title="Убрать файл"
+              aria-label="Убрать файл">✕</button>
+          </div>
+          <form class="cw-send" id="chat-form" hidden>
+            <label class="cw-clip-btn" title="Прикрепить файл">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"
+                stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l8-8a3.5 3.5 0 0 1 5 5l-8 8a2 2 0 0
+                  1-3-3l7.5-7.5"/>
+              </svg>
+              <input type="file" id="chat-file" aria-label="Прикрепить файл">
+            </label>
+            <input type="text" id="chat-text" maxlength="4000" placeholder="Сообщение" aria-label="Сообщение">
+            <button class="cw-act cw-send-btn" type="submit" title="Отправить">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"
+                stroke-linejoin="round" aria-hidden="true"><path d="M4 12h13M13 6l6 6-6 6"/></svg>
+              <span>Отправить</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/collab.js"></script>
+</body>
+</html>

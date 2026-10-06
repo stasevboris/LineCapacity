@@ -329,10 +329,10 @@ def plain(data: Any) -> Any:
     return data
 
 
-def run(scheme: Scheme, period: int = 2, min_load: bool = True) -> dict:
+def run(scheme: Scheme, period: int = 2, min_load: bool = True, settings: CalculationSettings | None = None) -> dict:
     check_scheme(scheme)
     model = to_model(scheme)
-    settings = CalculationSettings()
+    settings = settings or CalculationSettings()
     results = calculate(model, settings, period, min_load)
     with_min_load = bool(results.has_typical and results.min_load_requested and results.min_load_voltages)
     marks = extra_load_marks(model, settings, results.extra_load_targets)

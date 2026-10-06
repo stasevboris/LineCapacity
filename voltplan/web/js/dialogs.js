@@ -7,6 +7,7 @@ let submitHandler = null;
 
 function closeModal() {
   $('modal').hidden = true;
+  $('modal-card').classList.remove('wide');
   $('modal-body').replaceChildren();
   submitHandler = null;
 }
@@ -52,6 +53,7 @@ export function closeActiveModal() {
 }
 
 export async function run(action) {
+  if (state.readOnly) throw new Error('Проект открыт только для просмотра');
   const result = await api.apply(state.scheme, action);
   if (action.kind === 'delete') state.selection = null;
   commit(result.scheme, { current: result.current, blocks: result.snapshots });

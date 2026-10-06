@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Состояние сервиса — VoltPlan</title>
+  <meta name="description" content="Живой опрос сервера VoltPlan: API расчёта, справочник марок, консультант.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/css/site.css">
+  <link rel="stylesheet" href="/css/consult.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  <nav class="nav" aria-label="Разделы сайта">
+    <div class="container">
+      <a class="brand" href="/" aria-label="VoltPlan">Volt<span class="dot">·</span>Plan</a>
+      <div class="links">
+        <a href="/features">Возможности</a>
+        <a href="/tariffs">Тарифы</a>
+        <a href="/about">О продукте</a>
+        <a href="/faq">Вопросы</a>
+        <a href="/collab" data-auth="in">Совместная работа</a>
+        <a href="/app" data-auth="in">Редактор</a>
+        <a href="/account" data-auth="in">Кабинет</a>
+        <a href="/login" data-auth="out">Вход</a>
+        <a class="btn btn-primary" href="/register" data-auth="out">Начать бесплатно</a>
+        <a class="btn btn-ghost" id="logout" href="/" data-auth="in">Выйти</a>
+      </div>
+    </div>
+  </nav>
+  <main id="main" class="status">
+    <span class="kicker">Состояние</span>
+    <h1 class="status-title">Состояние сервиса</h1>
+    <p class="muted">Живой опрос сервера. Обновляется автоматически каждые 10 секунд.</p>
+    <div class="st-card">
+      <p class="big"><span id="ind" class="dot-ind down"></span><span id="state">Проверка…</span></p>
+      <div class="st-rows">
+        <div class="kv"><span class="muted">API расчёта</span><span id="api">—</span></div>
+        <div class="kv"><span class="muted">Марок в справочнике</span><span id="marks" translate="no">—</span></div>
+        <div class="kv"><span class="muted">Последняя проверка</span><span id="checked" translate="no">—</span></div>
+      </div>
+    </div>
+    <div class="st-card">
+      <h3 class="st-head">Компоненты</h3>
+      <div class="comp"><b>Веб-сайт</b><span class="op">● Работает</span></div>
+      <div class="comp"><b>API расчёта пропускной способности</b><span class="op" id="c-api">● Работает</span></div>
+      <div class="comp"><b>Учётные записи и проекты</b><span class="op" id="c-store">● Работает</span></div>
+      <div class="comp"><b>Консультант</b><span class="op" id="c-consultant">● Работает</span></div>
+      <div class="comp"><b>Обмен файлами .cir</b><span class="op" id="c-cir">● Работает</span></div>
+    </div>
+    <p class="muted status-links"><a href="/">← На главную</a> · <a href="/faq">Вопросы и ответы</a></p>
+  </main>
+  <footer class="foot">
+    <div class="container">
+      <div>
+        <div class="brand">Volt<span class="dot">·</span>Plan</div>
+        <p class="foot-about">Построение и расчёт воздушных сетей 0,4 кВ в браузере. Ручное построение схемы,
+          серверный расчёт режима, обмен файлами .cir с LineCapacity.</p>
+      </div>
+      <div class="foot-cols">
+        <div><h5>Продукт</h5><ul>
+          <li><a href="/features">Возможности</a></li>
+          <li><a href="/tariffs">Тарифы</a></li>
+          <li><a href="/app">Открыть редактор</a></li>
+        </ul></div>
+        <div><h5>Учётная запись</h5><ul>
+          <li><a href="/login">Вход</a></li>
+          <li><a href="/register">Регистрация</a></li>
+          <li><a href="/account">Личный кабинет</a></li>
+        </ul></div>
+        <div><h5>Ресурсы</h5><ul>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/faq">Вопросы и ответы</a></li>
+          <li><a href="/status">Состояние сервиса</a></li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="container"><div class="foot-legal">© 2026 VoltPlan. Курсовой проект. Расчёт сверен с программой
+      LineCapacity 1.27.</div></div>
+  </footer>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/js/status.js"></script>
+</body>
+</html>

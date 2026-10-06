@@ -93,7 +93,7 @@ export function resultsSection(kind, index) {
   const memo = kind === 'transformer' ? results.memo.transformer : results.memo[`${kind}s`]?.[index];
   if (!memo) return null;
   return h('section', { class: 'results-block' }, h('h4', {}, 'Результаты расчёта'),
-    h('pre', { class: 'memo' }, memo.join('\n')));
+    h('pre', { class: 'memo' }, memo.map((line) => h('div', { class: 'memo-line' }, line || ' '))));
 }
 
 export function openReport() {
