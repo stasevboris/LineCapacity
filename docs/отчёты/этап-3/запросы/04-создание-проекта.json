@@ -1,0 +1,22 @@
+{
+  "status": 200,
+  "body": {
+    "id": 1,
+    "name": "КТП-54",
+    "role": "owner",
+    "archived": false,
+    "owner": "inzhener@example.by",
+    "variants": [
+      {
+        "id": 1,
+        "name": "Основной",
+        "main": true,
+        "empty": false,
+        "updated": 1790989410.4179347
+      }
+    ],
+    "created": 1790989410.4179347,
+    "updated": 1790989410.4179347,
+    "settings": {}
+  }
+}

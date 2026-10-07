@@ -1,0 +1,11 @@
+POST http://127.0.0.1:8000/api/billing/confirm
+Cookie: voltplan_session=<токен сеанса>
+Content-Type: application/json
+
+{
+  "payment": "1415597ce7a74431bc00e8134082f3e8",
+  "number": "4111111111111111",
+  "expiry": "12/30",
+  "cvv": "123",
+  "holder": ""
+}

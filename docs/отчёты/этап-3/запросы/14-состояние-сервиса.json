@@ -1,0 +1,9 @@
+{
+  "status": 200,
+  "body": {
+    "status": "ok",
+    "storage": true,
+    "marks": 4974,
+    "consultant": false
+  }
+}

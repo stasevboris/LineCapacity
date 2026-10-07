@@ -1,0 +1,16 @@
+{
+  "status": 200,
+  "body": {
+    "id": "1415597ce7a74431bc00e8134082f3e8",
+    "tier": "max",
+    "title": "Максимум",
+    "amount_usd": 39.0,
+    "provider": "demo",
+    "status": "paid",
+    "card": "411111******1111",
+    "brand": "Visa",
+    "created": 1790989410.490973,
+    "finished": 1790989410.4980624,
+    "message": ""
+  }
+}

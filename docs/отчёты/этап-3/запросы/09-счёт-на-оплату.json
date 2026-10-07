@@ -1,0 +1,19 @@
+{
+  "status": 200,
+  "body": {
+    "mode": "form",
+    "payment": {
+      "id": "918b50ab2a9a4f728591b48378b5a9e0",
+      "tier": "max",
+      "title": "Максимум",
+      "amount_usd": 39.0,
+      "provider": "demo",
+      "status": "pending",
+      "card": "",
+      "brand": "",
+      "created": 1790989410.470774,
+      "finished": null,
+      "message": ""
+    }
+  }
+}

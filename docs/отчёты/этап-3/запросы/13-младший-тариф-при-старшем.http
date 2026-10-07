@@ -1,0 +1,8 @@
+POST http://127.0.0.1:8000/api/billing/checkout
+Cookie: voltplan_session=<токен сеанса>
+Content-Type: application/json
+
+{
+  "tier": "pro",
+  "provider": "demo"
+}

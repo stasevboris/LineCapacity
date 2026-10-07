@@ -1,0 +1,80 @@
+{
+  "status": 200,
+  "body": {
+    "rows": [
+      {
+        "name": "Основной",
+        "error": null,
+        "good": true,
+        "quality": {
+          "ok": true,
+          "outside": 0,
+          "total": 1,
+          "nominal": 220.0,
+          "worst_low_percent": 0.0,
+          "worst_high_percent": 4.964816995126517,
+          "consumers": [
+            {
+              "consumer": "ул. Одна, 1",
+              "low_percent": 0.0,
+              "high_percent": 4.964816995126517,
+              "ok": true
+            }
+          ]
+        },
+        "min_voltage": 230.21889226276144,
+        "min_consumer": "ул. Одна, 1",
+        "voltage_loss_percent": 0.2544738285529103,
+        "loss_kw": 0.012315076959013823,
+        "max_temperature": 32.32854572588623,
+        "load_factor": 0.030186084395813172,
+        "wear_hours": 0.013975055659521783,
+        "annual": null,
+        "annual_kwh": null,
+        "annual_cost_usd": null,
+        "variant": 1
+      },
+      {
+        "name": "Длинные пролёты",
+        "error": null,
+        "good": true,
+        "quality": {
+          "ok": true,
+          "outside": 0,
+          "total": 1,
+          "nominal": 220.0,
+          "worst_low_percent": 0.0,
+          "worst_high_percent": 4.9327625906216035,
+          "consumers": [
+            {
+              "consumer": "ул. Одна, 1",
+              "low_percent": 0.0,
+              "high_percent": 4.9327625906216035,
+              "ok": true
+            }
+          ]
+        },
+        "min_voltage": 227.3620874951972,
+        "min_consumer": "ул. Одна, 1",
+        "voltage_loss_percent": 1.4930278864205049,
+        "loss_kw": 0.07135620884036689,
+        "max_temperature": 32.32839181712827,
+        "load_factor": 0.02981174609930036,
+        "wear_hours": 0.013975035079328778,
+        "annual": null,
+        "annual_kwh": null,
+        "annual_cost_usd": null,
+        "variant": 2
+      }
+    ],
+    "best": 0,
+    "best_values": {
+      "min_voltage": 230.21889226276144,
+      "voltage_loss_percent": 0.2544738285529103,
+      "loss_kw": 0.012315076959013823,
+      "max_temperature": 32.32839181712827,
+      "load_factor": 0.02981174609930036,
+      "wear_hours": 0.013975035079328778
+    }
+  }
+}

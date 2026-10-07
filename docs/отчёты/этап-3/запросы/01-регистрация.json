@@ -1,0 +1,13 @@
+{
+  "status": 200,
+  "body": {
+    "id": 1,
+    "email": "inzhener@example.by",
+    "name": "Инженер",
+    "tier": "demo",
+    "tier_until": null,
+    "is_admin": false,
+    "language": "ru",
+    "created": 1790989410.2980115
+  }
+}

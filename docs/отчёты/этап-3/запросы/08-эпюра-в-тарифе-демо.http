@@ -1,0 +1,9 @@
+POST http://127.0.0.1:8000/api/calc/profile
+Cookie: voltplan_session=<токен сеанса>
+Content-Type: application/json
+
+{
+  "scheme": "<схема: структура как в запросе 04>",
+  "consumer": 0,
+  "season": 1
+}

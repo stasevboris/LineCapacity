@@ -1,0 +1,10 @@
+PUT http://127.0.0.1:8000/api/projects/1/settings
+Cookie: voltplan_session=<токен сеанса>
+Content-Type: application/json
+
+{
+  "settings": {
+    "voltage_min": 230,
+    "voltage_rated": 220
+  }
+}
